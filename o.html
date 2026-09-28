@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materialele orei</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div><h1><a href="./">Materialele orelor</a></h1><small id="crumb">…</small></div>
+  <a href="./" class="btn" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">Toate orele</a>
+</div></header>
+
+<div class="lesson-head"><div class="wrap">
+  <div class="meta" id="meta"></div>
+  <h2 id="title">Se încarcă…</h2>
+  <div class="actions">
+    <a class="btn primary" id="dl" download>⬇ Descarcă PDF</a>
+    <button class="btn" id="print">🖨 Printează</button>
+    <button class="btn lock" id="test" hidden>🔒 Test + barem</button>
+    <button class="btn" id="back" hidden>← Materialele orei</button>
+    <button class="btn" id="fs">⛶ Ecran complet</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <ul class="parts" id="parts"></ul>
+  <div id="pwbox"></div>
+  <div id="viewer"><div class="status">Se încarcă PDF-ul…</div></div>
+  <div class="nav"><a class="btn" id="prev" hidden>← Ora anterioară</a><a class="btn" id="next" hidden>Ora următoare →</a></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const TYPE = {t:"ora de teorie (T)", lt:"ora de laborator tehnologic (LT)", ip:"ora de instruire practică (IP)",
+              stagiu:"stagiu de pregătire practică", caip:"CAIP – practică comasată"};
+const ZI = ["duminică","luni","marți","miercuri","joi","vineri","sâmbătă"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const P = new URLSearchParams(location.search);
+const id = P.get("o"), testMode = P.get("test") === "1";
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js";
+const coarse = matchMedia("(pointer:coarse)").matches;
+
+function fail(msg){ $("#title").textContent = msg; $("#viewer").innerHTML = ""; document.querySelector(".actions").hidden = true; }
+
+fetch("data/ore.json").then(r => r.json()).then(all => {
+  const i = all.findIndex(o => o.id === id);
+  if (i < 0) return fail("Ora nu a fost găsită. Deschide lista tuturor orelor.");
+  const o = all[i];
+  const d = new Date(o.date + "T12:00");
+  const cls = o.cls === "9e" ? "9E" : "11P1";
+  document.title = `${cls} · ${o.title}`;
+  $("#crumb").textContent = `Clasa ${cls}` + (o.week ? ` · S${o.week}` : "");
+  $("#meta").textContent = `${cls} · ${o.module} · ${TYPE[o.type]} · ${ZI[d.getDay()]} ${o.date.slice(8,10)}.${o.date.slice(5,7)}.${o.date.slice(0,4)}, ${o.time}–${o.end}`;
+  $("#title").textContent = o.title + (testMode ? " — test și barem" : "");
+  $("#parts").innerHTML = testMode ? "" : (o.parts || []).map(p => `<li>${esc(p)}</li>`).join("");
+  const same = all.filter(x => x.cls === o.cls);
+  const k = same.indexOf(o);
+  if (k > 0) { $("#prev").href = "o.html?o=" + same[k-1].id; $("#prev").hidden = false; }
+  if (k < same.length-1) { $("#next").href = "o.html?o=" + same[k+1].id; $("#next").hidden = false; }
+  if (o.test && !testMode) { $("#test").hidden = false; $("#test").title = "Evaluare " + (o.evals||[]).join(", ") + " – PDF protejat cu parolă";
+    $("#test").onclick = () => location.href = `o.html?o=${o.id}&test=1`; }
+  if (testMode) { $("#back").hidden = false; $("#back").onclick = () => location.href = `o.html?o=${o.id}`; }
+  const url = testMode ? o.test : o.pdf;
+  if (!url) return fail("Pentru această oră nu există încă materiale.");
+  $("#dl").href = url;
+  $("#dl").setAttribute("download", `${cls}_${o.date}_${o.time.replace(":","")}_${o.type}${testMode ? "_test" : ""}.pdf`);
+  $("#print").onclick = () => printPdf(url);
+  show(url);
+}).catch(() => fail("Nu pot încărca lista orelor."));
+
+function printPdf(url){
+  if (coarse) { window.open(url, "_blank"); return; }      // telefon / tabletă: se deschide PDF-ul, apoi Partajare → Printează
+  let f = document.getElementById("printframe");
+  if (f) f.remove();
+  f = document.createElement("iframe");
+  f.id = "printframe"; f.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0";
+  f.src = url;
+  f.onload = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch(e) { window.open(url, "_blank"); } };
+  document.body.appendChild(f);
+}
+
+async function show(url){
+  const view = $("#viewer");
+  if (!window.pdfjsLib) { view.innerHTML = `<iframe src="${url}" style="width:100%;height:85vh;border:0"></iframe>`; return; }
+  const task = pdfjsLib.getDocument({url});
+  task.onPassword = (update, reason) => {
+    view.innerHTML = "";
+    $("#pwbox").innerHTML = `<form class="pw"><b>PDF protejat cu parolă</b>
+      <span>${reason === 2 ? "Parola nu este corectă. Încearcă din nou." : "Introdu parola pentru test și barem."}</span>
+      <input type="password" autocomplete="current-password" autofocus required><button class="btn primary">Deschide</button></form>`;
+    const form = $("#pwbox form");
+    form.onsubmit = e => { e.preventDefault(); const v = form.querySelector("input").value; $("#pwbox").innerHTML = ""; view.innerHTML = `<div class="status">Se deschide…</div>`; update(v); };
+  };
+  let pdf;
+  try { pdf = await task.promise; } catch(e) { view.innerHTML = `<div class="status">Nu pot afișa PDF-ul aici. Folosește „Descarcă PDF”.</div>`; return; }
+  view.innerHTML = "";
+  const canvases = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const c = document.createElement("canvas"); c.dataset.n = n; c.width = 595; c.height = 842;
+    c.style.width = "100%"; view.appendChild(c); canvases.push(c);
+  }
+  const done = new Set();
+  const draw = async c => {
+    const n = +c.dataset.n; if (done.has(n)) return; done.add(n);
+    const page = await pdf.getPage(n);
+    const base = page.getViewport({scale: 1});
+    const cssW = Math.min(view.clientWidth - 16, 1000);
+    const scale = cssW / base.width * Math.min(window.devicePixelRatio || 1, 2);
+    const vp = page.getViewport({scale});
+    c.width = vp.width; c.height = vp.height; c.style.width = cssW + "px";
+    await page.render({canvasContext: c.getContext("2d"), viewport: vp}).promise;
+  };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && draw(e.target)), {rootMargin: "800px"});
+    canvases.forEach(c => io.observe(c));
+  } else canvases.forEach(draw);
+}
+
+$("#fs").onclick = () => {
+  document.body.classList.toggle("board");
+  const el = document.documentElement;
+  if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+  else if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+};
+</script>
+</body>
+</html>
