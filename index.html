@@ -24,7 +24,7 @@
 </main>
 <script>
 const $ = s => document.querySelector(s);
-const TYPE = {t:"T", lt:"LT", ip:"IP", stagiu:"Stagiu", caip:"CAIP"};
+const TYPE = {t:"T", lt:"LT", ip:"IP", stagiu:"Stagiu", caip:"CAIP", dpcc:"DIR"};
 const ZI = ["dum.","lun.","mar.","mie.","joi","vin.","sâm."];
 const fmt = d => { const x = new Date(d+"T12:00"); return `${ZI[x.getDay()]} ${d.slice(8,10)}.${d.slice(5,7)}.${d.slice(0,4)}`; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -39,10 +39,11 @@ function row(o){
     <span class="ttl"><b>${esc(o.title)}</b><small>${esc(o.module)}</small></span>${ev}</a></li>`;
 }
 function modKey(o){ return o.mod ? "m"+o.mod : o.type==="caip" ? "stagiu" : o.type; }
+function modName(o){ return o.mod ? o.module : o.type==="dpcc" ? "Dirigenție (DPCC)" : "Stagii de practică / CAIP"; }
 function render(){
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-pressed", b.dataset.cls===cls));
   const list = ORE.filter(o => o.cls===cls);
-  const mods = [...new Map(list.map(o => [modKey(o), o.mod ? o.module : "Stagii de practică / CAIP"])).entries()]
+  const mods = [...new Map(list.map(o => [modKey(o), modName(o)])).entries()]
     .sort((a,b)=>a[0].localeCompare(b[0]));
   const sel = $("#mod"), cur = sel.value;
   sel.innerHTML = `<option value="">Toate modulele</option>` + mods.map(([k,n]) => `<option value="${k}">${esc(n)}</option>`).join("");

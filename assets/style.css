@@ -42,7 +42,7 @@ ul.hours li a:hover{background:var(--accent)}
 .when{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
 .badge{font-size:.75rem;font-weight:700;border-radius:6px;padding:2px 7px;text-align:center;
   border:1.5px solid currentColor;white-space:nowrap}
-.b-t{color:var(--t)} .b-lt{color:var(--lt)} .b-ip{color:var(--ip)} .b-stagiu,.b-caip{color:var(--st)}
+.b-t{color:var(--t)} .b-lt{color:var(--lt)} .b-ip{color:var(--ip)} .b-stagiu,.b-caip{color:var(--st)} .b-dpcc{color:#8a3ffc}
 .ttl{min-width:0}
 .ttl b{font-weight:600}
 .ttl small{display:block;color:var(--muted);font-size:.8rem}

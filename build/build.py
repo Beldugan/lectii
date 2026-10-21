@@ -56,7 +56,10 @@ CAIETE_11 = {
     "COMVEX": "11P1/Caiete de practica/Caiet_practica_stagiu_CDL_XI_P1_2026-2027_COMVEX_{ed}.pdf",
     "DP World": "11P1/Caiete de practica/Caiet_practica_stagiu_CDL_XI_P1_2026-2027_DP_World_CSCT_{ed}.pdf",
 }
-TYPE_NAME = {"t": "ora de teorie (T)", "lt": "ora de laborator tehnologic (LT)",
+DPCC_PLAN = "9E/Dirigentie/Proiecte_lectie_DPCC_IX-E_2026-2027.pdf"
+DPCC_FISE = "9E/Dirigentie/Fise_de_lucru_DPCC_IX-E_2026-2027_ELEV.pdf"
+TYPE_NAME = {"dpcc": "dirigenție – Dezvoltare personală și consiliere în carieră",
+             "t": "ora de teorie (T)", "lt": "ora de laborator tehnologic (LT)",
              "ip": "ora de instruire practică (IP)", "stagiu": "stagiu de pregătire practică",
              "caip": "CAIP – practică comasată"}
 CLS_NAME = {"9e": "9E", "11p1": "11P1"}
@@ -172,6 +175,8 @@ def parse_event(ev):
         cls, typ, mod, title = "11p1", "stagiu", None, s.split("–", 1)[-1].strip()
     elif s.startswith("[Stagiu CDEOȘ] 9E"):
         cls, typ, mod, title = "9e", "stagiu", None, s.split("–", 2)[-1].strip()
+    elif s.startswith("Dirigenție 9E –"):          # doar ora de joi are lecție; ora de vineri nu
+        cls, typ, mod, title = "9e", "dpcc", None, s.split("–", 1)[-1].strip()
     elif s.startswith("[CAIP] 9E"):
         cls, typ, mod, title = "9e", "caip", None, s.split("–", 1)[-1].strip()
     else:
@@ -236,6 +241,20 @@ def resolve(e, src, warn):
                     warn(e, f"nu găsesc {code} în manualul profesorului")
                 for t, a, b in found:
                     lock.append((f"Manual (ed. profesor) – {t}", prof, a, b))
+    elif e["type"] == "dpcc":         # dirigenție: proiectul de lecție + fișa de lucru
+        for rel, mark, lbl in ((DPCC_PLAN, "PROIECT DE LECȚIE nr.", "Proiect de lecție"),
+                               (DPCC_FISE, "FIȘA DE LUCRU nr.", "Fișa de lucru (ed. elev)")):
+            doc = Doc.get(src, rel)
+            starts = [(int(m.group(1)), i + 1) for i, pg in enumerate(doc.pages)
+                      for m in [re.search(re.escape(mark) + r"\s*(\d+)\s*·\s*S\d+", pg)] if m]
+            hit = [k for k, (n, _) in enumerate(starts) if n == e["nr"]]
+            if not hit:
+                warn(e, f"nu găsesc {lbl} nr. {e['nr']}")
+                continue
+            k = hit[0]
+            a = starts[k][1]
+            b = starts[k + 1][1] - 1 if k + 1 < len(starts) else doc.n
+            pub.append((f"{lbl} nr. {e['nr']} (S{e['week']})", doc, a, b))
     elif e["cls"] == "11p1":          # stagiu CDL
         for op, rel in CAIETE_11.items():
             m = re.search(rf"^{re.escape(op)}: Lucrarea (\d+)", e["desc"], re.M)
