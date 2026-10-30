@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matura Vault</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one vault door at a time — task cards on the left, a 3-wheel combination lock on the right, five padlocks as the progress rail. */
+:root {
+  --bg: #e9ecef;
+  --panel: #f8f9fa;
+  --steel: #cfd5db;
+  --line: #b9c1c9;
+  --ink: #14181d;
+  --ink-2: #4a535d;
+  --brass: #a8741a;
+  --brass-soft: #f1e2c4;
+  --ok: #2f7d4f;
+  --bad: #b33a2e;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #13171b; --panel: #1b2026; --steel: #2a3139; --line: #37404a;
+  --ink: #eef1f4; --ink-2: #a9b3bd; --brass: #e0a843; --brass-soft: #3a2f1a;
+  --ok: #5fc08a; --bad: #ef7a6b; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #13171b; --panel: #1b2026; --steel: #2a3139; --line: #37404a;
+  --ink: #eef1f4; --ink-2: #a9b3bd; --brass: #e0a843; --brass-soft: #3a2f1a;
+  --ok: #5fc08a; --bad: #ef7a6b; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 1.2rem + 2.4vw, 2.8rem); letter-spacing: .01em; margin: 0; line-height: 1.05; text-wrap: balance; }
+.lead { margin: 6px 0 0; color: var(--ink-2); max-width: 60ch; }
+.en { color: var(--ink-2); font-size: .88em; }
+.clock { font-family: var(--mono); font-size: 1.1rem; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-variant-numeric: tabular-nums; }
+
+.rail { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+.pad { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-family: var(--display); font-weight: 500; font-size: .92rem; color: var(--ink-2); }
+.pad svg { width: 16px; height: 16px; }
+.pad.now { border-color: var(--brass); color: var(--ink); box-shadow: 0 0 0 2px var(--brass-soft); }
+.pad.done { color: var(--ok); border-color: var(--ok); }
+
+.room { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 780px) { .room { grid-template-columns: 1fr; } }
+
+.eyebrow { font-family: var(--display); text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; color: var(--brass); font-weight: 700; margin: 0 0 4px; }
+h2 { font-family: var(--display); font-size: 1.6rem; margin: 0 0 14px; line-height: 1.15; }
+
+.tasks { display: grid; gap: 12px; }
+.task { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 12px; }
+.slot { width: 38px; height: 48px; border-radius: 6px; background: var(--steel); display: grid; place-items: center; font-family: var(--mono); font-weight: 700; color: var(--ink-2); font-size: .8rem; text-align: center; line-height: 1.1; }
+.q { margin: 0; font-size: 1.05rem; }
+.q .m { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+.hintbtn { margin-top: 8px; font: 600 .82rem var(--body); color: var(--brass); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.hint { margin: 6px 0 0; font-size: .92rem; color: var(--ink-2); border-left: 3px solid var(--brass); padding-left: 10px; }
+
+.vault { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.vault p { margin: 0 0 14px; color: var(--ink-2); font-size: .95rem; }
+.wheels { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; }
+.wheel { display: grid; justify-items: center; gap: 6px; }
+.wheel button { width: 64px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--steel); color: var(--ink); cursor: pointer; font-size: 1rem; }
+.wheel button:hover { border-color: var(--brass); }
+.digit { width: 64px; height: 82px; border-radius: 10px; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: 2.6rem; font-variant-numeric: tabular-nums;
+  background: linear-gradient(var(--steel), var(--panel) 30%, var(--panel) 70%, var(--steel)); border: 2px solid var(--line); }
+.label { font-family: var(--mono); font-size: .72rem; color: var(--ink-2); }
+.open { width: 100%; padding: 13px; border-radius: 10px; border: 0; background: var(--brass); color: #fff; font: 700 1.05rem var(--display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.open:hover { filter: brightness(1.08); }
+.msg { min-height: 1.5em; margin-top: 12px; font-weight: 600; text-align: center; }
+.msg.bad { color: var(--bad); } .msg.ok { color: var(--ok); }
+.tries { font-family: var(--mono); font-size: .8rem; color: var(--ink-2); text-align: center; margin-top: 4px; }
+.shake { animation: shake .4s; }
+@keyframes shake { 20%,60% { transform: translateX(-7px); } 40%,80% { transform: translateX(7px); } }
+.next { margin-top: 12px; width: 100%; padding: 11px; border-radius: 10px; border: 2px solid var(--ok); background: none; color: var(--ok); font: 700 1rem var(--display); cursor: pointer; }
+
+.final { background: var(--panel); border: 2px solid var(--brass); border-radius: 16px; padding: 28px 22px; text-align: center; }
+.final h2 { font-size: clamp(1.7rem, 1.2rem + 2vw, 2.4rem); }
+.stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 34px; margin: 18px 0; }
+.stat .n { font-family: var(--mono); font-weight: 700; font-size: 2.2rem; color: var(--brass); font-variant-numeric: tabular-nums; }
+.stat .k { font-size: .85rem; color: var(--ink-2); }
+.final p { max-width: 58ch; margin: 0 auto 10px; }
+
+.key { margin-top: 28px; background: var(--brass-soft); border-radius: 10px; padding: 14px 16px; font-family: var(--mono); font-size: .9rem; }
+button:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Matura Vault</h1>
+      <p class="lead">Five locks stand between you and the vault. Each lock takes a three-digit code, and each digit is the answer to one task.<br>
+      <span class="en">PL: Pięć zamków, każdy otwiera kod z trzech cyfr. Każda cyfra to wynik jednego zadania.</span></p>
+    </div>
+    <div class="clock" id="clock" aria-label="time">00:00</div>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="progress"></nav>
+  <main id="stage"></main>
+  <div class="key" id="key" hidden></div>
+</div>
+
+<script>
+const ROOMS = [
+  { pl: "Liczby", en: "Numbers", code: "517", tasks: [
+    { q: 'Oblicz <span class="m">log₂ 32</span>.', e: "Evaluate log₂ 32.", h: "2 to what power gives 32?" },
+    { q: 'Oblicz <span class="m">(√3)⁴ : 9</span>.', e: "Evaluate (√3)⁴ ÷ 9.", h: "(√3)² = 3, so (√3)⁴ = 3²." },
+    { q: 'Ile to jest <span class="m">20%</span> liczby <span class="m">35</span>?', e: "What is 20% of 35?", h: "20% of 35 = 0.2 · 35." } ] },
+  { pl: "Równania", en: "Equations", code: "863", tasks: [
+    { q: 'Rozwiąż równanie <span class="m">3x − 7 = 2x + 1</span>.', e: "Solve 3x − 7 = 2x + 1.", h: "Collect x on the left and the numbers on the right." },
+    { q: 'Podaj dodatnie rozwiązanie równania <span class="m">x² − 5x − 6 = 0</span>.', e: "Give the positive root of x² − 5x − 6 = 0.", h: "x² − 5x − 6 = (x − 6)(x + 1)." },
+    { q: 'Ile liczb całkowitych spełnia nierówność <span class="m">|x| &lt; 2</span>?', e: "How many integers satisfy |x| < 2?", h: "|x| < 2 means −2 < x < 2. List them." } ] },
+  { pl: "Funkcje", en: "Functions", code: "542", tasks: [
+    { q: 'Dana jest funkcja <span class="m">f(x) = −2x + 9</span>. Oblicz <span class="m">f(2)</span>.', e: "f(x) = −2x + 9. Find f(2).", h: "Substitute x = 2." },
+    { q: 'Podaj pierwszą współrzędną wierzchołka paraboli <span class="m">y = x² − 8x + 3</span>.', e: "Give the x-coordinate of the vertex of y = x² − 8x + 3.", h: "p = −b / (2a)." },
+    { q: 'Wyznacz miejsce zerowe funkcji <span class="m">f(x) = 3x − 6</span>.', e: "Find the zero of f(x) = 3x − 6.", h: "Solve 3x − 6 = 0." } ] },
+  { pl: "Ciągi i trygonometria", en: "Sequences & trigonometry", code: "985", tasks: [
+    { q: 'Ciąg arytmetyczny: <span class="m">a₁ = 3</span>, <span class="m">r = 2</span>. Oblicz <span class="m">a₄</span>.', e: "Arithmetic sequence a₁ = 3, r = 2. Find a₄.", h: "aₙ = a₁ + (n − 1)·r." },
+    { q: 'Ciąg geometryczny: <span class="m">a₁ = 1</span>, <span class="m">q = 2</span>. Oblicz <span class="m">a₄</span>.', e: "Geometric sequence a₁ = 1, q = 2. Find a₄.", h: "aₙ = a₁ · qⁿ⁻¹." },
+    { q: 'Przyprostokątne trójkąta prostokątnego mają długości <span class="m">3</span> i <span class="m">4</span>. Jaka jest długość przeciwprostokątnej?', e: "The legs of a right triangle are 3 and 4. How long is the hypotenuse?", h: "Pythagoras: c² = 3² + 4²." } ] },
+  { pl: "Geometria i prawdopodobieństwo", en: "Geometry & probability", code: "567", tasks: [
+    { q: 'Oblicz odległość punktów <span class="m">A = (1, 2)</span> i <span class="m">B = (4, 6)</span>.', e: "Find the distance between A = (1, 2) and B = (4, 6).", h: "|AB| = √((x₂ − x₁)² + (y₂ − y₁)²)." },
+    { q: 'Na ile sposobów można ustawić <span class="m">3</span> różne książki na półce?', e: "In how many ways can 3 different books be arranged on a shelf?", h: "3! = 3 · 2 · 1." },
+    { q: 'Podaj medianę danych: <span class="m">9, 1, 7, 3, 9</span>.', e: "Give the median of: 9, 1, 7, 3, 9.", h: "Sort the data in ascending order first." } ] }
+];
+
+const LOCK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>';
+const UNLOCK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none"/><path d="M5 7V5a3 3 0 0 1 5.8-1"/></svg>';
+
+let room = 0, wheels = [0,0,0], tries = 0, totalTries = 0, hintsUsed = 0, solved = false;
+const t0 = Date.now(); let tEnd = null;
+
+function fmt(ms){ const s = Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+setInterval(()=>{ document.getElementById("clock").textContent = fmt((tEnd||Date.now()) - t0); }, 500);
+
+function renderRail(){
+  document.getElementById("rail").innerHTML = ROOMS.map((r,i)=>{
+    const cls = i < room || (i===room && solved) ? "done" : i===room ? "now" : "";
+    return `<div class="pad ${cls}">${cls==="done"?UNLOCK:LOCK}<span>${i+1}. ${r.en}</span></div>`;
+  }).join("");
+}
+
+function renderRoom(){
+  renderRail();
+  if (room >= ROOMS.length) return renderFinal();
+  const r = ROOMS[room];
+  document.getElementById("stage").innerHTML = `
+  <div class="room">
+    <section>
+      <p class="eyebrow">Lock ${room+1} of ${ROOMS.length}</p>
+      <h2>${r.en} <span class="en">/ ${r.pl}</span></h2>
+      <div class="tasks">
+        ${r.tasks.map((t,i)=>`
+        <article class="task">
+          <div class="slot">digit<br>${i+1}</div>
+          <div>
+            <p class="q">${t.e}</p>
+            <div class="en">PL: ${t.q}</div>
+            <button class="hintbtn" id="hb${i}" data-i="${i}">Hint</button>
+            <p class="hint" id="h${i}" hidden>${t.h}</p>
+          </div>
+        </article>`).join("")}
+      </div>
+    </section>
+    <aside class="vault" id="vault">
+      <p>Dial in the answers to tasks 1, 2 and 3, then try the lock. If it stays shut, it tells you how many digits are right.</p>
+      <div class="wheels">
+        ${[0,1,2].map(k=>`
+        <div class="wheel">
+          <button id="up${k}" aria-label="digit ${k+1} up" data-k="${k}" data-d="1">▲</button>
+          <div class="digit" id="d${k}">${wheels[k]}</div>
+          <button id="dn${k}" aria-label="digit ${k+1} down" data-k="${k}" data-d="-1">▼</button>
+          <span class="label">digit ${k+1}</span>
+        </div>`).join("")}
+      </div>
+      <button class="open" id="open">Open</button>
+      <div class="msg" id="msg" role="status"></div>
+      <div class="tries" id="tries">attempts: ${tries}</div>
+    </aside>
+  </div>`;
+  document.querySelectorAll(".hintbtn").forEach(b=>b.onclick=()=>{
+    const h = document.getElementById("h"+b.dataset.i);
+    if (h.hidden) { h.hidden = false; if (!h.dataset.seen) { h.dataset.seen = 1; hintsUsed++; } } else h.hidden = true;
+  });
+  document.querySelectorAll(".wheel button").forEach(b=>b.onclick=()=>{
+    if (solved) return;
+    const k = +b.dataset.k; wheels[k] = (wheels[k] + +b.dataset.d + 10) % 10;
+    document.getElementById("d"+k).textContent = wheels[k];
+  });
+  document.getElementById("open").onclick = tryOpen;
+}
+
+function tryOpen(){
+  if (solved) return;
+  tries++; totalTries++;
+  document.getElementById("tries").textContent = "attempts: " + tries;
+  const msg = document.getElementById("msg");
+  if (wheels.join("") === ROOMS[room].code) {
+    solved = true;
+    msg.className = "msg ok";
+    msg.textContent = "Unlocked.";
+    renderRail();
+    const b = document.createElement("button");
+    b.className = "next"; b.id = "next";
+    b.textContent = room === ROOMS.length-1 ? "Open the vault →" : "Next lock →";
+    b.onclick = ()=>{ room++; wheels=[0,0,0]; tries=0; solved=false; if(room>=ROOMS.length) tEnd = Date.now(); renderRoom(); };
+    document.getElementById("vault").appendChild(b);
+  } else {
+    const correct = wheels.filter((w,i)=>String(w)===ROOMS[room].code[i]).length;
+    msg.className = "msg bad";
+    msg.textContent = `Still locked. Correct digits: ${correct} of 3`;
+    const v = document.getElementById("vault");
+    v.classList.remove("shake"); void v.offsetWidth; v.classList.add("shake");
+  }
+}
+
+function renderFinal(){
+  document.getElementById("stage").innerHTML = `
+  <section class="final">
+    <p class="eyebrow">Vault open</p>
+    <h2>All 15 tasks solved</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">${fmt(tEnd - t0)}</div><div class="k">time</div></div>
+      <div class="stat"><div class="n">${totalTries}</div><div class="k">attempts</div></div>
+      <div class="stat"><div class="n">${hintsUsed}</div><div class="k">hints used</div></div>
+    </div>
+    <p>Those fifteen tasks covered five areas of the exam: numbers, equations, functions, sequences with trigonometry, and geometry with probability. Every one of them comes up on the real exam, and you got through all of them.</p>
+  </section>`;
+}
+
+/* Teacher key: open the page with #klucz at the end of the link */
+function showKey(){
+  const k = document.getElementById("key");
+  k.hidden = location.hash !== "#klucz";
+  k.innerHTML = "Teacher key: " + ROOMS.map((r,i)=>`${i+1}) ${r.code}`).join(" · ");
+}
+window.addEventListener("hashchange", showKey);
+showKey();
+renderRoom();
+</script>
+</body>
+</html>

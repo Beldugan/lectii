@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matura Ladder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a game-show stage — question and four answer plates on the left, a 12-rung ladder on the right that climbs with every correct answer. */
+:root {
+  --bg: #e8edf0;
+  --panel: #f7f9fa;
+  --plate: #dfe6ea;
+  --line: #b6c2c9;
+  --ink: #111a20;
+  --ink-2: #48565f;
+  --accent: #1f6f78;
+  --accent-soft: #d3e8ea;
+  --gold: #a8741a;
+  --ok: #2f7d4f;
+  --bad: #b33a2e;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12181b; --panel: #1a2226; --plate: #243035; --line: #354349;
+  --ink: #edf2f4; --ink-2: #a6b4bb; --accent: #4fb3bd; --accent-soft: #173539;
+  --gold: #e0a843; --ok: #5fc08a; --bad: #ef7a6b; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12181b; --panel: #1a2226; --plate: #243035; --line: #354349;
+  --ink: #edf2f4; --ink-2: #a6b4bb; --accent: #4fb3bd; --accent-soft: #173539;
+  --gold: #e0a843; --ok: #5fc08a; --bad: #ef7a6b; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 1.2rem + 2.4vw, 2.8rem); margin: 0; line-height: 1.05; }
+.lead { margin: 6px 0 22px; color: var(--ink-2); max-width: 64ch; }
+.en { color: var(--ink-2); font-size: .88em; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 22px; align-items: start; }
+@media (max-width: 760px) { .stage { grid-template-columns: 1fr; } .ladder { order: -1; } }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.eyebrow { font-family: var(--display); text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; color: var(--accent); font-weight: 700; margin: 0 0 6px; }
+.q { font-size: 1.2rem; margin: 0 0 4px; }
+.m { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+.answers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 18px; }
+@media (max-width: 520px) { .answers { grid-template-columns: 1fr; } }
+.ans { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border-radius: 10px; border: 2px solid var(--line); background: var(--plate); color: var(--ink); font: 500 1.05rem var(--mono); cursor: pointer; min-height: 56px; }
+.ans b { font-family: var(--display); color: var(--accent); font-size: 1.05rem; }
+.ans:hover:not(:disabled) { border-color: var(--accent); }
+.ans:disabled { cursor: default; }
+.ans.gone { visibility: hidden; }
+.ans.right { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 16%, var(--plate)); }
+.ans.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, var(--plate)); }
+
+.life { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.life button { padding: 8px 13px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); font: 600 .86rem var(--body); cursor: pointer; }
+.life button:disabled { opacity: .4; cursor: default; text-decoration: line-through; }
+.box { margin-top: 14px; padding: 12px 14px; border-radius: 10px; border-left: 4px solid var(--accent); background: var(--accent-soft); }
+.box.ok { border-color: var(--ok); } .box.bad { border-color: var(--bad); }
+.box p { margin: 0; }
+.next { margin-top: 14px; padding: 11px 18px; border-radius: 10px; border: 0; background: var(--accent); color: #fff; font: 700 1rem var(--display); letter-spacing: .04em; cursor: pointer; }
+
+.ladder { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column-reverse; gap: 4px; }
+.rung { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; border-radius: 6px; font-family: var(--mono); font-size: .88rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.rung .t { font-family: var(--body); font-size: .78rem; }
+.rung.now { background: var(--accent); color: #fff; } .rung.now .t { color: #fff; }
+.rung.ok { color: var(--ok); font-weight: 700; }
+.rung.miss { color: var(--bad); }
+.rung.safe { border: 1px dashed var(--gold); }
+
+.final h2 { font-family: var(--display); font-size: clamp(1.7rem, 1.2rem + 2vw, 2.4rem); margin: 0 0 8px; }
+.big { font-family: var(--mono); font-size: 3.2rem; font-weight: 700; color: var(--gold); line-height: 1; }
+.final ul { padding-left: 1.2em; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.key { margin-top: 28px; background: var(--accent-soft); border-radius: 10px; padding: 14px 16px; font-family: var(--mono); font-size: .9rem; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Matura Ladder</h1>
+  <p class="lead">Twelve multiple-choice questions in the style of the exam, each one a little harder than the last. Every correct answer moves you up one rung. You have three lifelines, one use each. The Polish wording under each question is how it will look on the real paper.</p>
+  <div class="stage">
+    <main id="main"></main>
+    <aside class="ladder" id="ladder" aria-label="ladder"></aside>
+  </div>
+  <div class="key" id="key" hidden></div>
+</div>
+
+<script>
+const Q = [
+  { t:"Potęgi", en:"Powers", q:'Liczba <span class="m">2⁵ · 2⁻³</span> jest równa', e:"2⁵ · 2⁻³ equals", a:["2","4","8","2⁻¹⁵"], c:1, h:"When multiplying powers with the same base, add the exponents.", s:"2⁵ · 2⁻³ = 2⁵⁺⁽⁻³⁾ = 2² = 4." },
+  { t:"Logarytmy", en:"Logarithms", q:'Liczba <span class="m">log₃ 81</span> jest równa', e:"log₃ 81 equals", a:["27","3","4","9"], c:2, h:"81 = 3 · 3 · 3 · 3.", s:"3⁴ = 81, so log₃ 81 = 4." },
+  { t:"Procenty", en:"Percentages", q:'Po obniżce o <span class="m">20%</span> kurtka kosztuje <span class="m">160 zł</span>. Cena przed obniżką była równa', e:"After a 20% discount a jacket costs 160 zł. The original price was", a:["128 zł","180 zł","192 zł","200 zł"], c:3, h:"After the discount 80% of the price is left, so 0.8 · x = 160.", s:"0.8x = 160 ⟹ x = 200 zł. (192 zł is the classic trap: 160 plus 20% of 160.)" },
+  { t:"Nierówności", en:"Inequalities", q:'Zbiorem rozwiązań nierówności <span class="m">2x − 3 &gt; 5</span> jest', e:"The solution set of 2x − 3 > 5 is", a:["x > 4","x > 1","x < 4","x > 8"], c:0, h:"Add 3 to both sides, then divide by 2.", s:"2x > 8 ⟹ x > 4." },
+  { t:"Wzory skróconego mnożenia", en:"Special products", q:'Wartość wyrażenia <span class="m">(√5 − 1)(√5 + 1)</span> jest równa', e:"(√5 − 1)(√5 + 1) equals", a:["√5","4","6","24"], c:1, h:"(a − b)(a + b) = a² − b².", s:"(√5)² − 1² = 5 − 1 = 4." },
+  { t:"Nierówność kwadratowa", en:"Quadratic inequality", q:'Zbiorem rozwiązań nierówności <span class="m">x² − 9 ≤ 0</span> jest', e:"The solution set of x² − 9 ≤ 0 is", a:["{−3, 3}","(−∞, −3⟩ ∪ ⟨3, ∞)","⟨−3, 3⟩","⟨0, 3⟩"], c:2, h:"Roots are −3 and 3. The parabola opens upwards. Where is it below the axis?", s:"(x − 3)(x + 3) ≤ 0 for x ∈ ⟨−3, 3⟩." },
+  { t:"Funkcja kwadratowa", en:"Quadratic function", q:'Największa wartość funkcji <span class="m">f(x) = −(x − 2)² + 5</span> jest równa', e:"The greatest value of f(x) = −(x − 2)² + 5 is", a:["2","−2","−5","5"], c:3, h:"Vertex form: f(x) = a(x − p)² + q, vertex W = (p, q).", s:"a < 0, so the maximum is q = 5 (at x = 2)." },
+  { t:"Ciąg arytmetyczny", en:"Arithmetic sequence", q:'W ciągu arytmetycznym <span class="m">a₁ = 4</span> i <span class="m">a₅ = 16</span>. Różnica tego ciągu jest równa', e:"In an arithmetic sequence a₁ = 4 and a₅ = 16. The common difference is", a:["2","3","4","12"], c:1, h:"a₅ = a₁ + 4r.", s:"16 = 4 + 4r ⟹ r = 3." },
+  { t:"Trygonometria", en:"Trigonometry", q:'Kąt <span class="m">α</span> jest ostry i <span class="m">sin α = 3/5</span>. Wtedy <span class="m">cos α</span> jest równy', e:"α is acute and sin α = 3/5. Then cos α equals", a:["4/5","2/5","3/4","5/4"], c:0, h:"sin²α + cos²α = 1.", s:"cos²α = 1 − 9/25 = 16/25, and α is acute, so cos α = 4/5." },
+  { t:"Geometria analityczna", en:"Analytic geometry", q:'Prosta prostopadła do prostej <span class="m">y = 2x + 1</span>, przechodząca przez punkt <span class="m">(0, 3)</span>, ma równanie', e:"The line perpendicular to y = 2x + 1 through (0, 3) is", a:["y = 2x + 3","y = −2x + 3","y = ½x + 3","y = −½x + 3"], c:3, h:"Perpendicular lines: a₁ · a₂ = −1.", s:"Slope −1/2, and the point (0, 3) gives b = 3: y = −½x + 3." },
+  { t:"Prawdopodobieństwo", en:"Probability", q:'Rzucamy dwa razy symetryczną kostką. Prawdopodobieństwo, że suma oczek będzie równa <span class="m">7</span>, jest równe', e:"Two fair dice are rolled. The probability that the sum is 7 is", a:["7/36","1/6","1/12","5/36"], c:1, h:"|Ω| = 36. List the pairs: (1,6), (2,5), …", s:"Pairs (1,6),(2,5),(3,4),(4,3),(5,2),(6,1): 6 out of 36, so 1/6." },
+  { t:"Stereometria", en:"Solid geometry", q:'Stożek ma promień podstawy <span class="m">r = 3</span> i wysokość <span class="m">h = 4</span>. Objętość stożka jest równa', e:"A cone has base radius 3 and height 4. Its volume is", a:["15π","36π","12π","48π"], c:2, h:"V = ⅓ · πr² · h.", s:"V = ⅓ · π · 9 · 4 = 12π. (15π is the lateral area πrl with l = 5, a common trap.)" }
+];
+const L = ["A","B","C","D"];
+let i = 0, answered = false, results = [], life = { half:true, hint:true, tutor:true }, removed = [];
+
+function ladder(){
+  document.getElementById("ladder").innerHTML = Q.map((q,k)=>{
+    let cls = k===i && i<Q.length ? "now" : results[k]===true ? "ok" : results[k]===false ? "miss" : "";
+    if (k===3 || k===7) cls += " safe";
+    return `<div class="rung ${cls}"><span>${k+1}</span><span class="t">${q.en}</span></div>`;
+  }).join("");
+}
+
+function render(){
+  ladder();
+  if (i >= Q.length) return final();
+  const q = Q[i]; answered = false; removed = [];
+  document.getElementById("main").innerHTML = `
+  <section class="card">
+    <p class="eyebrow">Question ${i+1} of ${Q.length} · ${q.en}</p>
+    <p class="q">${q.e}</p>
+    <div class="en">PL: ${q.q}</div>
+    <div class="answers">${q.a.map((a,k)=>`<button class="ans" id="a${k}" data-k="${k}"><b>${L[k]}.</b><span>${a}</span></button>`).join("")}</div>
+    <div class="life">
+      <button id="lHalf" ${life.half?"":"disabled"}>50 : 50</button>
+      <button id="lHint" ${life.hint?"":"disabled"}>Hint</button>
+      <button id="lTutor" ${life.tutor?"":"disabled"}>Ask the tutor</button>
+    </div>
+    <div id="out"></div>
+  </section>`;
+  document.querySelectorAll(".ans").forEach(b=>b.onclick=()=>pick(+b.dataset.k));
+  document.getElementById("lHalf").onclick = e=>{
+    if (answered) return; life.half=false; e.target.disabled=true;
+    const wrong = [0,1,2,3].filter(k=>k!==q.c).sort(()=>Math.random()-.5).slice(0,2);
+    wrong.forEach(k=>{ const b=document.getElementById("a"+k); b.classList.add("gone"); b.disabled=true; });
+  };
+  document.getElementById("lHint").onclick = e=>{
+    if (answered) return; life.hint=false; e.target.disabled=true;
+    document.getElementById("out").innerHTML = `<div class="box"><p><b>Hint:</b> ${q.h}</p></div>`;
+  };
+  document.getElementById("lTutor").onclick = e=>{
+    if (answered) return; life.tutor=false; e.target.disabled=true;
+    document.getElementById("out").innerHTML = `<div class="box"><p>You get 30 seconds to talk it through with your tutor.</p></div>`;
+  };
+}
+
+function pick(k){
+  if (answered) return; answered = true;
+  const q = Q[i], good = k===q.c;
+  results[i] = good;
+  document.querySelectorAll(".ans").forEach(b=>b.disabled=true);
+  document.getElementById("a"+q.c).classList.add("right");
+  if (!good) document.getElementById("a"+k).classList.add("wrong");
+  document.getElementById("out").innerHTML = `
+    <div class="box ${good?"ok":"bad"}"><p><b>${good?"Correct. One rung up.":"Not this time. The answer is "+L[q.c]+"."}</b> ${q.s}</p></div>
+    <button class="next" id="next">${i===Q.length-1?"See result →":"Next →"}</button>`;
+  document.getElementById("next").onclick = ()=>{ i++; render(); };
+  ladder();
+}
+
+function final(){
+  const n = results.filter(Boolean).length;
+  const miss = Q.filter((q,k)=>!results[k]).map(q=>q.en+" ("+q.t+")");
+  document.getElementById("main").innerHTML = `
+  <section class="card final">
+    <p class="eyebrow">Final result</p>
+    <div class="big">${n} / ${Q.length}</div>
+    <h2>${n>=10?"Exam level: covered.":n>=7?"Solid. The pass mark is well behind you.":"A useful start. Now we know what to work on."}</h2>
+    <p>The pass mark for the basic-level exam is 30%. Today you scored ${Math.round(n/Q.length*100)}%.</p>
+    ${miss.length?`<p><b>To revisit:</b></p><ul>${miss.map(m=>`<li>${m}</li>`).join("")}</ul>`:`<p>Not a single mistake.</p>`}
+  </section>`;
+}
+
+function showKey(){
+  const k = document.getElementById("key");
+  k.hidden = location.hash !== "#klucz";
+  k.innerHTML = "Key: " + Q.map((q,n)=>`${n+1}${L[q.c]}`).join(" · ");
+}
+window.addEventListener("hashchange", showKey);
+showKey();
+render();
+</script>
+</body>
+</html>
