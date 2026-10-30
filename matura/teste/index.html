@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <script src="config.js"></script>
+<script src="deadlines.js"></script>
 <script src="tests.js"></script>
 <style>
 /* Layout: one sheet of squared exercise-book paper with a red margin line; the test list and each test live on the same sheet. */
@@ -119,7 +120,7 @@ const I18N = {
     submit: "Submit test", confirm: "Submit now? You cannot change answers afterwards.", yes: "Yes, submit", no: "Not yet",
     unanswered: n => `${n} question(s) still empty.`, sending: "Sending…", sentOk: "Sent ✓", sentAt: "Submitted",
     fail: "Could not send. Copy the code below and paste it into the Preply chat.", noUrl: "Automatic sending is not set up yet. Copy the code below and paste it into the Preply chat.",
-    copy: "Copy code", copied: "Copied", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", name: "Patryk"
+    copy: "Copy code", copied: "Copied", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", name: "Patryk"
   },
   pl: {
     title: "Matura z matematyki — sprawdziany", sub: "Nowy sprawdzian otwiera się w każdą środę i sobotę. Rozwiąż go za jednym razem i kliknij „Wyślij”. Odpowiedzi omawiamy na dwóch kolejnych lekcjach.",
@@ -130,7 +131,7 @@ const I18N = {
     submit: "Wyślij sprawdzian", confirm: "Wysłać teraz? Po wysłaniu nie można zmienić odpowiedzi.", yes: "Tak, wyślij", no: "Jeszcze nie",
     unanswered: n => `Bez odpowiedzi: ${n}.`, sending: "Wysyłanie…", sentOk: "Wysłano ✓", sentAt: "Wysłano",
     fail: "Nie udało się wysłać. Skopiuj poniższy kod i wklej go na czacie Preply.", noUrl: "Automatyczne wysyłanie nie jest jeszcze włączone. Skopiuj poniższy kod i wklej go na czacie Preply.",
-    copy: "Kopiuj kod", copied: "Skopiowano", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", name: "Patryk"
+    copy: "Kopiuj kod", copied: "Skopiowano", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", name: "Patryk"
   }
 };
 const LETTERS = ["A","B","C","D"];
@@ -148,6 +149,9 @@ applyTheme();
 
 function todayWarsaw() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
 function isOpen(t) { return PREVIEW || todayWarsaw() >= t.d; }
+function deadline(t) { const d = (window.DEADLINES || {})[t.n]; return d ? new Date(d) : null; }
+function isClosed(t) { const d = deadline(t); return !PREVIEW && !!d && Date.now() > d.getTime(); }
+function fmtDT(d) { return d.toLocaleString(lang === "pl" ? "pl-PL" : "en-GB", { timeZone: "Europe/Warsaw", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
 function daysTo(d) { return Math.round((Date.parse(d + "T00:00:00Z") - Date.parse(todayWarsaw() + "T00:00:00Z")) / 864e5); }
 function fmtDate(d) { return new Date(d + "T12:00:00Z").toLocaleDateString(lang === "pl" ? "pl-PL" : "en-GB", { weekday: "short", day: "numeric", month: "short" }); }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
@@ -180,10 +184,11 @@ function renderList() {
     const open = isOpen(t);
     let stamp;
     if (sent) stamp = `<span class="stamp sent">${T().sent} ✓</span>`;
+    else if (open && isClosed(t)) stamp = `<span class="stamp lock">${T().closed}</span>`;
     else if (open) stamp = `<span class="stamp open">${T().openNow} →</span>`;
     else stamp = `<span class="stamp lock">${T().daysLeft(daysTo(t.d))}</span>`;
     const inner = `<span class="no">${String(t.n).padStart(2, "0")}</span>
-      <span><span class="tt">${esc(lang === "pl" ? t.pl : t.en)}</span><br><span class="dd">${T().opens}: ${fmtDate(t.d)}</span></span>${stamp}`;
+      <span><span class="tt">${esc(lang === "pl" ? t.pl : t.en)}</span><br><span class="dd">${T().opens}: ${fmtDate(t.d)}${deadline(t) ? ` · ${T().until}: ${fmtDT(deadline(t))}` : ""}</span></span>${stamp}`;
     return open ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
   }).join("");
   document.getElementById("sheet").innerHTML = header() + `<h1>${T().title}</h1><p class="sub">${T().sub}</p><div class="list">${rows}</div>`;
@@ -196,7 +201,8 @@ function renderTest(n) {
   if (!isOpen(t)) { document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}.</p>`; wireHeader(); return; }
   const draft = store.get("draft-" + n, { c: {}, o: {} });
   const sent = store.get("sent-" + n, null);
-  const ro = sent ? "disabled" : "";
+  const closed = !sent && isClosed(t);
+  const ro = (sent || closed) ? "disabled" : "";
   const qs = t.items.map((it, i) => {
     const num = i + 1;
     const q = lang === "pl" ? it.pl : it.en;
@@ -213,12 +219,14 @@ function renderTest(n) {
       <div class="open">${finalField}<label for="w${num}">${it.proof ? T().proof : T().work}</label><textarea id="w${num}" data-n="${num}" data-k="work" ${ro}>${esc(d.work)}</textarea></div></section>`;
   }).join("");
   const sentBlock = sent ? `<div class="status">${sent.ok ? T().sentOk : T().manual}</div><div class="note">${T().sentAt}: ${new Date(sent.at).toLocaleString(lang === "pl" ? "pl-PL" : "en-GB")}</div>${sent.ok ? "" : codeBox(sent.payload, sent.reason)}`
-    : `<button class="btn" id="submit">${T().submit}</button><div id="confirm"></div>`;
+    : closed ? `<p class="note err">${T().closedMsg} ${fmtDT(deadline(t))}.</p>`
+    : `${deadline(t) ? `<p class="note">${T().until}: <b>${fmtDT(deadline(t))}</b> (${T().plTime})</p>` : ""}<button class="btn" id="submit">${T().submit}</button><div id="confirm"></div>`;
   document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a>
     <h1>${T().test} ${t.n}: ${esc(lang === "pl" ? t.pl : t.en)}</h1><p class="rules">${T().rules}</p>${qs}<div class="submit">${sentBlock}</div>`;
   wireHeader();
   renderMath();
   if (sent) { wireCopy(); return; }
+  if (closed) return;
   document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", () => {
     const num = +r.name.slice(1); draft.c[num] = r.value; store.set("draft-" + n, draft);
     document.querySelectorAll(`input[name="q${num}"]`).forEach(x => x.closest(".opt").classList.toggle("sel", x.checked));
