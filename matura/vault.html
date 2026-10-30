@@ -108,28 +108,27 @@ button:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
 
   <nav class="rail" id="rail" aria-label="progress"></nav>
   <main id="stage"></main>
-  <div class="key" id="key" hidden></div>
-</div>
+  </div>
 
 <script>
 const ROOMS = [
-  { pl: "Liczby", en: "Numbers", code: "517", tasks: [
+  { pl: "Liczby", en: "Numbers", code: "46d2f59df1d00d332212ff12e915c6d284e9a6a69212560452491900209e8411", pos: ["2d281afd8d66d3f8", "13671626ff025c97", "9b03a7c03035926b"], tasks: [
     { q: 'Oblicz <span class="m">log₂ 32</span>.', e: "Evaluate log₂ 32.", h: "2 to what power gives 32?" },
     { q: 'Oblicz <span class="m">(√3)⁴ : 9</span>.', e: "Evaluate (√3)⁴ ÷ 9.", h: "(√3)² = 3, so (√3)⁴ = 3²." },
     { q: 'Ile to jest <span class="m">20%</span> liczby <span class="m">35</span>?', e: "What is 20% of 35?", h: "20% of 35 = 0.2 · 35." } ] },
-  { pl: "Równania", en: "Equations", code: "863", tasks: [
+  { pl: "Równania", en: "Equations", code: "8409c74b97c9bc5407457eeeeb811d8182258afaf7bca7beffc2ee9ce5909ad6", pos: ["dd620e13a07cfaa0", "18fda07440d64655", "3316156319004cda"], tasks: [
     { q: 'Rozwiąż równanie <span class="m">3x − 7 = 2x + 1</span>.', e: "Solve 3x − 7 = 2x + 1.", h: "Collect x on the left and the numbers on the right." },
     { q: 'Podaj dodatnie rozwiązanie równania <span class="m">x² − 5x − 6 = 0</span>.', e: "Give the positive root of x² − 5x − 6 = 0.", h: "x² − 5x − 6 = (x − 6)(x + 1)." },
     { q: 'Ile liczb całkowitych spełnia nierówność <span class="m">|x| &lt; 2</span>?', e: "How many integers satisfy |x| < 2?", h: "|x| < 2 means −2 < x < 2. List them." } ] },
-  { pl: "Funkcje", en: "Functions", code: "542", tasks: [
+  { pl: "Funkcje", en: "Functions", code: "6bbe9db401e7364abe320f2d1aad58fb137193e11d698636e65b40c7c5932ede", pos: ["2d281afd8d66d3f8", "bb5c383df42a4c95", "482d71220ac48a19"], tasks: [
     { q: 'Dana jest funkcja <span class="m">f(x) = −2x + 9</span>. Oblicz <span class="m">f(2)</span>.', e: "f(x) = −2x + 9. Find f(2).", h: "Substitute x = 2." },
     { q: 'Podaj pierwszą współrzędną wierzchołka paraboli <span class="m">y = x² − 8x + 3</span>.', e: "Give the x-coordinate of the vertex of y = x² − 8x + 3.", h: "p = −b / (2a)." },
     { q: 'Wyznacz miejsce zerowe funkcji <span class="m">f(x) = 3x − 6</span>.', e: "Find the zero of f(x) = 3x − 6.", h: "Solve 3x − 6 = 0." } ] },
-  { pl: "Ciągi i trygonometria", en: "Sequences & trigonometry", code: "985", tasks: [
+  { pl: "Ciągi i trygonometria", en: "Sequences & trigonometry", code: "5040a00fd997a9ef1dc07dbefcd09aec6cd0de42bfe738a8a7d995bb6f0cf778", pos: ["2afff0c8b1995306", "5238257332bbcc2f", "bc7e79ed9e5cb40d"], tasks: [
     { q: 'Ciąg arytmetyczny: <span class="m">a₁ = 3</span>, <span class="m">r = 2</span>. Oblicz <span class="m">a₄</span>.', e: "Arithmetic sequence a₁ = 3, r = 2. Find a₄.", h: "aₙ = a₁ + (n − 1)·r." },
     { q: 'Ciąg geometryczny: <span class="m">a₁ = 1</span>, <span class="m">q = 2</span>. Oblicz <span class="m">a₄</span>.', e: "Geometric sequence a₁ = 1, q = 2. Find a₄.", h: "aₙ = a₁ · qⁿ⁻¹." },
     { q: 'Przyprostokątne trójkąta prostokątnego mają długości <span class="m">3</span> i <span class="m">4</span>. Jaka jest długość przeciwprostokątnej?', e: "The legs of a right triangle are 3 and 4. How long is the hypotenuse?", h: "Pythagoras: c² = 3² + 4²." } ] },
-  { pl: "Geometria i prawdopodobieństwo", en: "Geometry & probability", code: "567", tasks: [
+  { pl: "Geometria i prawdopodobieństwo", en: "Geometry & probability", code: "3d9cc2025293870bbf9c01163a4caf84654d3203808173be95be34ba36e7a1e1", pos: ["2d281afd8d66d3f8", "18fda07440d64655", "9b03a7c03035926b"], tasks: [
     { q: 'Oblicz odległość punktów <span class="m">A = (1, 2)</span> i <span class="m">B = (4, 6)</span>.', e: "Find the distance between A = (1, 2) and B = (4, 6).", h: "|AB| = √((x₂ − x₁)² + (y₂ − y₁)²)." },
     { q: 'Na ile sposobów można ustawić <span class="m">3</span> różne książki na półce?', e: "In how many ways can 3 different books be arranged on a shelf?", h: "3! = 3 · 2 · 1." },
     { q: 'Podaj medianę danych: <span class="m">9, 1, 7, 3, 9</span>.', e: "Give the median of: 9, 1, 7, 3, 9.", h: "Sort the data in ascending order first." } ] }
@@ -201,12 +200,13 @@ function renderRoom(){
   document.getElementById("open").onclick = tryOpen;
 }
 
-function tryOpen(){
+async function sha_(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+async function tryOpen(){
   if (solved) return;
   tries++; totalTries++;
   document.getElementById("tries").textContent = "attempts: " + tries;
   const msg = document.getElementById("msg");
-  if (wheels.join("") === ROOMS[room].code) {
+  if (await sha_("vault:" + wheels.join("")) === ROOMS[room].code) {
     solved = true;
     msg.className = "msg ok";
     msg.textContent = "Unlocked.";
@@ -217,7 +217,7 @@ function tryOpen(){
     b.onclick = ()=>{ room++; wheels=[0,0,0]; tries=0; solved=false; if(room>=ROOMS.length) tEnd = Date.now(); renderRoom(); };
     document.getElementById("vault").appendChild(b);
   } else {
-    const correct = wheels.filter((w,i)=>String(w)===ROOMS[room].code[i]).length;
+    let correct = 0; for (let i = 0; i < 3; i++) if ((await sha_("vault:" + i + ":" + wheels[i])).slice(0, 16) === ROOMS[room].pos[i]) correct++;
     msg.className = "msg bad";
     msg.textContent = `Still locked. Correct digits: ${correct} of 3`;
     const v = document.getElementById("vault");
@@ -239,14 +239,6 @@ function renderFinal(){
   </section>`;
 }
 
-/* Teacher key: open the page with #klucz at the end of the link */
-function showKey(){
-  const k = document.getElementById("key");
-  k.hidden = location.hash !== "#klucz";
-  k.innerHTML = "Teacher key: " + ROOMS.map((r,i)=>`${i+1}) ${r.code}`).join(" · ");
-}
-window.addEventListener("hashchange", showKey);
-showKey();
 renderRoom();
 </script>
 </body>

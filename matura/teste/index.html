@@ -3,15 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Patryk · Matura Tests</title>
+<title>Matura Tests</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@500&family=Caveat:wght@600&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <script src="config.js"></script>
-<script src="deadlines.js"></script>
-<script src="tests.js"></script>
+<script src="tests.enc.js"></script>
 <style>
 /* Layout: one sheet of squared exercise-book paper with a red margin line; the test list and each test live on the same sheet. */
 :root {
@@ -120,7 +119,7 @@ const I18N = {
     submit: "Submit test", confirm: "Submit now? You cannot change answers afterwards.", yes: "Yes, submit", no: "Not yet",
     unanswered: n => `${n} question(s) still empty.`, sending: "Sending…", sentOk: "Sent ✓", sentAt: "Submitted",
     fail: "Could not send. Copy the code below and paste it into the Preply chat.", noUrl: "Automatic sending is not set up yet. Copy the code below and paste it into the Preply chat.",
-    copy: "Copy code", copied: "Copied", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", name: "Patryk"
+    copy: "Copy code", copied: "Copied", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", loading: "Loading…", sendFail: "Sending failed. Your answers are saved on this device — check your connection and press Submit again.", needCode: "Open this page with the link from your Preply message.", badCode: "This link is not valid. Use the link from your Preply message.", net: "Cannot reach the server. Check your connection and reload the page."
   },
   pl: {
     title: "Matura z matematyki — sprawdziany", sub: "Nowy sprawdzian otwiera się w każdą środę i sobotę. Rozwiąż go za jednym razem i kliknij „Wyślij”. Odpowiedzi omawiamy na dwóch kolejnych lekcjach.",
@@ -131,7 +130,7 @@ const I18N = {
     submit: "Wyślij sprawdzian", confirm: "Wysłać teraz? Po wysłaniu nie można zmienić odpowiedzi.", yes: "Tak, wyślij", no: "Jeszcze nie",
     unanswered: n => `Bez odpowiedzi: ${n}.`, sending: "Wysyłanie…", sentOk: "Wysłano ✓", sentAt: "Wysłano",
     fail: "Nie udało się wysłać. Skopiuj poniższy kod i wklej go na czacie Preply.", noUrl: "Automatyczne wysyłanie nie jest jeszcze włączone. Skopiuj poniższy kod i wklej go na czacie Preply.",
-    copy: "Kopiuj kod", copied: "Skopiowano", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", name: "Patryk"
+    copy: "Kopiuj kod", copied: "Skopiowano", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", loading: "Wczytywanie…", sendFail: "Wysyłanie nie powiodło się. Odpowiedzi są zapisane na tym urządzeniu — sprawdź internet i kliknij „Wyślij” ponownie.", needCode: "Otwórz tę stronę linkiem z wiadomości na Preply.", badCode: "Ten link jest nieprawidłowy. Użyj linku z wiadomości na Preply.", net: "Brak połączenia z serwerem. Sprawdź internet i odśwież stronę."
   }
 };
 const LETTERS = ["A","B","C","D"];
@@ -141,16 +140,34 @@ const store = {
 };
 let lang = store.get("lang", "en");
 let theme = store.get("theme", "system");
-const PREVIEW = location.hash === "#beldu-preview" || store.get("preview", false);
-if (location.hash === "#beldu-preview") store.set("preview", true);
+const qs0 = new URLSearchParams(location.search);
+if (qs0.get("k")) { store.set("code", qs0.get("k")); history.replaceState(null, "", location.pathname + location.hash); }
+const CODE = store.get("code", "");
+let META = null, META_ERR = null;
+const ITEMS = {};
+async function loadMeta() {
+  if (!CODE) { META_ERR = "nocode"; return; }
+  try { const r = await fetch(window.SHEET_URL + "?a=meta&k=" + encodeURIComponent(CODE)); const j = await r.json(); if (j.error) META_ERR = j.error; else META = j; }
+  catch (e) { META_ERR = "net"; }
+}
+function mt(t) { return META ? META.tests.find(x => x.n === t.n) : null; }
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function getItems(t) {
+  const r = await fetch(window.SHEET_URL + "?a=key&n=" + t.n + "&k=" + encodeURIComponent(CODE));
+  const j = await r.json();
+  if (!j.key) throw new Error(j.error || "locked");
+  const key = await crypto.subtle.importKey("raw", b64(j.key), "AES-GCM", false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(t.iv) }, key, b64(t.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
 
 function applyTheme() { if (theme === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", theme); }
 applyTheme();
 
 function todayWarsaw() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
-function isOpen(t) { return PREVIEW || todayWarsaw() >= t.d; }
-function deadline(t) { const d = (window.DEADLINES || {})[t.n]; return d ? new Date(d) : null; }
-function isClosed(t) { const d = deadline(t); return !PREVIEW && !!d && Date.now() > d.getTime(); }
+function isOpen(t) { const x = mt(t); return !!(x && x.open); }
+function deadline(t) { const x = mt(t); return x && x.deadline ? new Date(x.deadline) : null; }
+function isClosed(t) { const d = deadline(t); return !!d && META.role !== "admin" && Date.now() > d.getTime(); }
 function fmtDT(d) { return d.toLocaleString(lang === "pl" ? "pl-PL" : "en-GB", { timeZone: "Europe/Warsaw", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
 function daysTo(d) { return Math.round((Date.parse(d + "T00:00:00Z") - Date.parse(todayWarsaw() + "T00:00:00Z")) / 864e5); }
 function fmtDate(d) { return new Date(d + "T12:00:00Z").toLocaleDateString(lang === "pl" ? "pl-PL" : "en-GB", { weekday: "short", day: "numeric", month: "short" }); }
@@ -160,7 +177,7 @@ const txt = o => (Array.isArray(o) ? (lang === "pl" ? o[1] : o[0]) : o);
 
 function header() {
   return `<div class="top">
-    <div class="who">${T().name} · Matura 2027</div>
+    <div class="who">Matura 2027</div>
     <div class="toggles">
       <div class="seg" role="group" aria-label="Language">
         <button id="lang-en" aria-pressed="${lang === "en"}">EN</button><button id="lang-pl" aria-pressed="${lang === "pl"}">PL</button>
@@ -191,7 +208,8 @@ function renderList() {
       <span><span class="tt">${esc(lang === "pl" ? t.pl : t.en)}</span><br><span class="dd">${T().opens}: ${fmtDate(t.d)}${deadline(t) ? ` · ${T().until}: ${fmtDT(deadline(t))}` : ""}</span></span>${stamp}`;
     return open ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
   }).join("");
-  document.getElementById("sheet").innerHTML = header() + `<h1>${T().title}</h1><p class="sub">${T().sub}</p><div class="list">${rows}</div>`;
+  const warn = META_ERR ? `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>` : "";
+  document.getElementById("sheet").innerHTML = header() + `<h1>${T().title}</h1><p class="sub">${T().sub}</p>${warn}<div class="list">${rows}</div>`;
   wireHeader();
 }
 
@@ -199,11 +217,18 @@ function renderTest(n) {
   const t = TESTS.find(x => x.n === n);
   if (!t) return renderList();
   if (!isOpen(t)) { document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}.</p>`; wireHeader(); return; }
+  if (!ITEMS[n]) {
+    document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p class="note">${T().loading}</p>`; wireHeader();
+    getItems(t).then(items => { ITEMS[n] = items; if (location.hash === "#t" + n) renderTest(n); })
+      .catch(() => { document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p class="note err">${T().net}</p>`; wireHeader(); });
+    return;
+  }
+  const items = ITEMS[n];
   const draft = store.get("draft-" + n, { c: {}, o: {} });
   const sent = store.get("sent-" + n, null);
   const closed = !sent && isClosed(t);
   const ro = (sent || closed) ? "disabled" : "";
-  const qs = t.items.map((it, i) => {
+  const qs = items.map((it, i) => {
     const num = i + 1;
     const q = lang === "pl" ? it.pl : it.en;
     if (it.t === "c") {
@@ -235,7 +260,7 @@ function renderTest(n) {
     const num = +el.dataset.n; draft.o[num] = draft.o[num] || { final: "", work: "" }; draft.o[num][el.dataset.k] = el.value; store.set("draft-" + n, draft);
   }));
   document.getElementById("submit").onclick = () => {
-    const empty = t.items.filter((it, i) => it.t === "c" ? !draft.c[i + 1] : !(draft.o[i + 1] && ((draft.o[i + 1].final || "").trim() || (draft.o[i + 1].work || "").trim()))).length;
+    const empty = items.filter((it, i) => it.t === "c" ? !draft.c[i + 1] : !(draft.o[i + 1] && ((draft.o[i + 1].final || "").trim() || (draft.o[i + 1].work || "").trim()))).length;
     document.getElementById("confirm").innerHTML = `<p class="note">${empty ? `<span class="err">${T().unanswered(empty)}</span> ` : ""}${T().confirm}</p>
       <div class="toggles"><button class="btn" id="yes">${T().yes}</button><button class="btn ghost" id="no">${T().no}</button></div>`;
     document.getElementById("no").onclick = () => { document.getElementById("confirm").innerHTML = ""; };
@@ -254,13 +279,15 @@ function wireCopy() {
 
 async function send(t, draft) {
   document.getElementById("confirm").innerHTML = `<p class="note">${T().sending}</p>`;
-  const payload = { test: t.n, student: "Patryk", lang, submittedAt: new Date().toISOString(), closed: draft.c, open: draft.o };
-  let ok = false, reason = "nourl";
-  if (window.SHEET_URL) {
-    try { await fetch(window.SHEET_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }); ok = true; }
-    catch (e) { reason = "fail"; }
-  }
-  store.set("sent-" + t.n, { at: Date.now(), ok, reason, payload });
+  const payload = { test: t.n, k: CODE, lang, submittedAt: new Date().toISOString(), closed: draft.c, open: draft.o };
+  let ok = false, reason = "fail";
+  try {
+    const r = await fetch(window.SHEET_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    const j = await r.json(); ok = !!j.ok; reason = j.reason || (ok ? "" : "fail");
+  } catch (e) { reason = "fail"; }
+  if (reason === "closed") { await loadMeta(); renderTest(t.n); return; }
+  if (!ok) { document.getElementById("confirm").innerHTML = `<p class="note err">${reason === "code" ? T().badCode : T().sendFail}</p>`; return; }
+  store.set("sent-" + t.n, { at: Date.now(), ok: true });
   renderTest(t.n);
 }
 
@@ -274,7 +301,8 @@ function route(keep) {
   if (!keep) window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", () => route());
-route();
+document.getElementById("sheet").innerHTML = `<p class="note">${T().loading}</p>`;
+loadMeta().then(() => route());
 </script>
 </body>
 </html>

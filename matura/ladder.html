@@ -91,23 +91,22 @@ button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
     <main id="main"></main>
     <aside class="ladder" id="ladder" aria-label="ladder"></aside>
   </div>
-  <div class="key" id="key" hidden></div>
-</div>
+  </div>
 
 <script>
 const Q = [
-  { t:"Potęgi", en:"Powers", q:'Liczba <span class="m">2⁵ · 2⁻³</span> jest równa', e:"2⁵ · 2⁻³ equals", a:["2","4","8","2⁻¹⁵"], c:1, h:"When multiplying powers with the same base, add the exponents.", s:"2⁵ · 2⁻³ = 2⁵⁺⁽⁻³⁾ = 2² = 4." },
-  { t:"Logarytmy", en:"Logarithms", q:'Liczba <span class="m">log₃ 81</span> jest równa', e:"log₃ 81 equals", a:["27","3","4","9"], c:2, h:"81 = 3 · 3 · 3 · 3.", s:"3⁴ = 81, so log₃ 81 = 4." },
-  { t:"Procenty", en:"Percentages", q:'Po obniżce o <span class="m">20%</span> kurtka kosztuje <span class="m">160 zł</span>. Cena przed obniżką była równa', e:"After a 20% discount a jacket costs 160 zł. The original price was", a:["128 zł","180 zł","192 zł","200 zł"], c:3, h:"After the discount 80% of the price is left, so 0.8 · x = 160.", s:"0.8x = 160 ⟹ x = 200 zł. (192 zł is the classic trap: 160 plus 20% of 160.)" },
-  { t:"Nierówności", en:"Inequalities", q:'Zbiorem rozwiązań nierówności <span class="m">2x − 3 &gt; 5</span> jest', e:"The solution set of 2x − 3 > 5 is", a:["x > 4","x > 1","x < 4","x > 8"], c:0, h:"Add 3 to both sides, then divide by 2.", s:"2x > 8 ⟹ x > 4." },
-  { t:"Wzory skróconego mnożenia", en:"Special products", q:'Wartość wyrażenia <span class="m">(√5 − 1)(√5 + 1)</span> jest równa', e:"(√5 − 1)(√5 + 1) equals", a:["√5","4","6","24"], c:1, h:"(a − b)(a + b) = a² − b².", s:"(√5)² − 1² = 5 − 1 = 4." },
-  { t:"Nierówność kwadratowa", en:"Quadratic inequality", q:'Zbiorem rozwiązań nierówności <span class="m">x² − 9 ≤ 0</span> jest', e:"The solution set of x² − 9 ≤ 0 is", a:["{−3, 3}","(−∞, −3⟩ ∪ ⟨3, ∞)","⟨−3, 3⟩","⟨0, 3⟩"], c:2, h:"Roots are −3 and 3. The parabola opens upwards. Where is it below the axis?", s:"(x − 3)(x + 3) ≤ 0 for x ∈ ⟨−3, 3⟩." },
-  { t:"Funkcja kwadratowa", en:"Quadratic function", q:'Największa wartość funkcji <span class="m">f(x) = −(x − 2)² + 5</span> jest równa', e:"The greatest value of f(x) = −(x − 2)² + 5 is", a:["2","−2","−5","5"], c:3, h:"Vertex form: f(x) = a(x − p)² + q, vertex W = (p, q).", s:"a < 0, so the maximum is q = 5 (at x = 2)." },
-  { t:"Ciąg arytmetyczny", en:"Arithmetic sequence", q:'W ciągu arytmetycznym <span class="m">a₁ = 4</span> i <span class="m">a₅ = 16</span>. Różnica tego ciągu jest równa', e:"In an arithmetic sequence a₁ = 4 and a₅ = 16. The common difference is", a:["2","3","4","12"], c:1, h:"a₅ = a₁ + 4r.", s:"16 = 4 + 4r ⟹ r = 3." },
-  { t:"Trygonometria", en:"Trigonometry", q:'Kąt <span class="m">α</span> jest ostry i <span class="m">sin α = 3/5</span>. Wtedy <span class="m">cos α</span> jest równy', e:"α is acute and sin α = 3/5. Then cos α equals", a:["4/5","2/5","3/4","5/4"], c:0, h:"sin²α + cos²α = 1.", s:"cos²α = 1 − 9/25 = 16/25, and α is acute, so cos α = 4/5." },
-  { t:"Geometria analityczna", en:"Analytic geometry", q:'Prosta prostopadła do prostej <span class="m">y = 2x + 1</span>, przechodząca przez punkt <span class="m">(0, 3)</span>, ma równanie', e:"The line perpendicular to y = 2x + 1 through (0, 3) is", a:["y = 2x + 3","y = −2x + 3","y = ½x + 3","y = −½x + 3"], c:3, h:"Perpendicular lines: a₁ · a₂ = −1.", s:"Slope −1/2, and the point (0, 3) gives b = 3: y = −½x + 3." },
-  { t:"Prawdopodobieństwo", en:"Probability", q:'Rzucamy dwa razy symetryczną kostką. Prawdopodobieństwo, że suma oczek będzie równa <span class="m">7</span>, jest równe', e:"Two fair dice are rolled. The probability that the sum is 7 is", a:["7/36","1/6","1/12","5/36"], c:1, h:"|Ω| = 36. List the pairs: (1,6), (2,5), …", s:"Pairs (1,6),(2,5),(3,4),(4,3),(5,2),(6,1): 6 out of 36, so 1/6." },
-  { t:"Stereometria", en:"Solid geometry", q:'Stożek ma promień podstawy <span class="m">r = 3</span> i wysokość <span class="m">h = 4</span>. Objętość stożka jest równa', e:"A cone has base radius 3 and height 4. Its volume is", a:["15π","36π","12π","48π"], c:2, h:"V = ⅓ · πr² · h.", s:"V = ⅓ · π · 9 · 4 = 12π. (15π is the lateral area πrl with l = 5, a common trap.)" }
+  { t:"Potęgi", en:"Powers", q:'Liczba <span class="m">2⁵ · 2⁻³</span> jest równa', e:"2⁵ · 2⁻³ equals", a:["2","4","8","2⁻¹⁵"], x:"f4ed928f499f937b", h:"When multiplying powers with the same base, add the exponents.", s:"2⁵ · 2⁻³ = 2⁵⁺⁽⁻³⁾ = 2² = 4." },
+  { t:"Logarytmy", en:"Logarithms", q:'Liczba <span class="m">log₃ 81</span> jest równa', e:"log₃ 81 equals", a:["27","3","4","9"], x:"85e483c5b496c9f6", h:"81 = 3 · 3 · 3 · 3.", s:"3⁴ = 81, so log₃ 81 = 4." },
+  { t:"Procenty", en:"Percentages", q:'Po obniżce o <span class="m">20%</span> kurtka kosztuje <span class="m">160 zł</span>. Cena przed obniżką była równa', e:"After a 20% discount a jacket costs 160 zł. The original price was", a:["128 zł","180 zł","192 zł","200 zł"], x:"10fc91c96288d29c", h:"After the discount 80% of the price is left, so 0.8 · x = 160.", s:"0.8x = 160 ⟹ x = 200 zł. (192 zł is the classic trap: 160 plus 20% of 160.)" },
+  { t:"Nierówności", en:"Inequalities", q:'Zbiorem rozwiązań nierówności <span class="m">2x − 3 &gt; 5</span> jest', e:"The solution set of 2x − 3 > 5 is", a:["x > 4","x > 1","x < 4","x > 8"], x:"77fdb3c7fd73f388", h:"Add 3 to both sides, then divide by 2.", s:"2x > 8 ⟹ x > 4." },
+  { t:"Wzory skróconego mnożenia", en:"Special products", q:'Wartość wyrażenia <span class="m">(√5 − 1)(√5 + 1)</span> jest równa', e:"(√5 − 1)(√5 + 1) equals", a:["√5","4","6","24"], x:"d63fb576ebaff9ec", h:"(a − b)(a + b) = a² − b².", s:"(√5)² − 1² = 5 − 1 = 4." },
+  { t:"Nierówność kwadratowa", en:"Quadratic inequality", q:'Zbiorem rozwiązań nierówności <span class="m">x² − 9 ≤ 0</span> jest', e:"The solution set of x² − 9 ≤ 0 is", a:["{−3, 3}","(−∞, −3⟩ ∪ ⟨3, ∞)","⟨−3, 3⟩","⟨0, 3⟩"], x:"30a50d6231696693", h:"Roots are −3 and 3. The parabola opens upwards. Where is it below the axis?", s:"(x − 3)(x + 3) ≤ 0 for x ∈ ⟨−3, 3⟩." },
+  { t:"Funkcja kwadratowa", en:"Quadratic function", q:'Największa wartość funkcji <span class="m">f(x) = −(x − 2)² + 5</span> jest równa', e:"The greatest value of f(x) = −(x − 2)² + 5 is", a:["2","−2","−5","5"], x:"16c91581f7b15d27", h:"Vertex form: f(x) = a(x − p)² + q, vertex W = (p, q).", s:"a < 0, so the maximum is q = 5 (at x = 2)." },
+  { t:"Ciąg arytmetyczny", en:"Arithmetic sequence", q:'W ciągu arytmetycznym <span class="m">a₁ = 4</span> i <span class="m">a₅ = 16</span>. Różnica tego ciągu jest równa', e:"In an arithmetic sequence a₁ = 4 and a₅ = 16. The common difference is", a:["2","3","4","12"], x:"86cedd582d33f694", h:"a₅ = a₁ + 4r.", s:"16 = 4 + 4r ⟹ r = 3." },
+  { t:"Trygonometria", en:"Trigonometry", q:'Kąt <span class="m">α</span> jest ostry i <span class="m">sin α = 3/5</span>. Wtedy <span class="m">cos α</span> jest równy', e:"α is acute and sin α = 3/5. Then cos α equals", a:["4/5","2/5","3/4","5/4"], x:"cc7d9a610700239c", h:"sin²α + cos²α = 1.", s:"cos²α = 1 − 9/25 = 16/25, and α is acute, so cos α = 4/5." },
+  { t:"Geometria analityczna", en:"Analytic geometry", q:'Prosta prostopadła do prostej <span class="m">y = 2x + 1</span>, przechodząca przez punkt <span class="m">(0, 3)</span>, ma równanie', e:"The line perpendicular to y = 2x + 1 through (0, 3) is", a:["y = 2x + 3","y = −2x + 3","y = ½x + 3","y = −½x + 3"], x:"e93afab501f1f7a3", h:"Perpendicular lines: a₁ · a₂ = −1.", s:"Slope −1/2, and the point (0, 3) gives b = 3: y = −½x + 3." },
+  { t:"Prawdopodobieństwo", en:"Probability", q:'Rzucamy dwa razy symetryczną kostką. Prawdopodobieństwo, że suma oczek będzie równa <span class="m">7</span>, jest równe', e:"Two fair dice are rolled. The probability that the sum is 7 is", a:["7/36","1/6","1/12","5/36"], x:"a8259db7b37ae6b7", h:"|Ω| = 36. List the pairs: (1,6), (2,5), …", s:"Pairs (1,6),(2,5),(3,4),(4,3),(5,2),(6,1): 6 out of 36, so 1/6." },
+  { t:"Stereometria", en:"Solid geometry", q:'Stożek ma promień podstawy <span class="m">r = 3</span> i wysokość <span class="m">h = 4</span>. Objętość stożka jest równa', e:"A cone has base radius 3 and height 4. Its volume is", a:["15π","36π","12π","48π"], x:"a4a1ee1f8401e585", h:"V = ⅓ · πr² · h.", s:"V = ⅓ · π · 9 · 4 = 12π. (15π is the lateral area πrl with l = 5, a common trap.)" }
 ];
 const L = ["A","B","C","D"];
 let i = 0, answered = false, results = [], life = { half:true, hint:true, tutor:true }, removed = [];
@@ -138,9 +137,9 @@ function render(){
     <div id="out"></div>
   </section>`;
   document.querySelectorAll(".ans").forEach(b=>b.onclick=()=>pick(+b.dataset.k));
-  document.getElementById("lHalf").onclick = e=>{
+  document.getElementById("lHalf").onclick = async e=>{
     if (answered) return; life.half=false; e.target.disabled=true;
-    const wrong = [0,1,2,3].filter(k=>k!==q.c).sort(()=>Math.random()-.5).slice(0,2);
+    const c = await correctOf(i); const wrong = [0,1,2,3].filter(k=>k!==c).sort(()=>Math.random()-.5).slice(0,2);
     wrong.forEach(k=>{ const b=document.getElementById("a"+k); b.classList.add("gone"); b.disabled=true; });
   };
   document.getElementById("lHint").onclick = e=>{
@@ -153,9 +152,11 @@ function render(){
   };
 }
 
-function pick(k){
+async function sha_(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,16); }
+async function correctOf(i){ for (let k = 0; k < 4; k++) if (await sha_("ladder:" + i + ":" + k) === Q[i].x) return k; return -1; }
+async function pick(k){
   if (answered) return; answered = true;
-  const q = Q[i], good = k===q.c;
+  const q = Q[i]; q.c = await correctOf(i); const good = k===q.c;
   results[i] = good;
   document.querySelectorAll(".ans").forEach(b=>b.disabled=true);
   document.getElementById("a"+q.c).classList.add("right");
@@ -180,13 +181,6 @@ function final(){
   </section>`;
 }
 
-function showKey(){
-  const k = document.getElementById("key");
-  k.hidden = location.hash !== "#klucz";
-  k.innerHTML = "Key: " + Q.map((q,n)=>`${n+1}${L[q.c]}`).join(" · ");
-}
-window.addEventListener("hashchange", showKey);
-showKey();
 render();
 </script>
 </body>
