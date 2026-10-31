@@ -90,6 +90,13 @@ a.row:hover { background: color-mix(in srgb, var(--pen) 7%, transparent); }
 .open input { max-width: 280px; font-family: var(--mono); }
 .open textarea { min-height: 120px; resize: vertical; }
 .hintline { font-size: .82rem; color: var(--ink-2); }
+.upl { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn.sm { font-size: .88rem; padding: 6px 12px; border-width: 1.5px; }
+.photos { display: flex; gap: 10px; flex-wrap: wrap; }
+.photos:empty { display: none; }
+.ph { position: relative; }
+.ph img { display: block; height: 96px; max-width: 100%; border: 1px solid var(--ink-2); border-radius: 4px; }
+.rm { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ink-2); background: var(--paper); color: var(--red); font: 700 .9rem var(--serif); cursor: pointer; line-height: 1; }
 
 .submit { margin-top: 30px; border-top: 2px solid var(--ink); padding-top: 18px; display: grid; gap: 12px; }
 .btn { font: 700 1rem var(--serif); padding: 10px 18px; border-radius: 6px; border: 2px solid var(--pen); background: var(--pen); color: var(--paper); cursor: pointer; justify-self: start; }
@@ -111,7 +118,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 <script>
 const I18N = {
   en: {
-    title: "Matura maths — tests", sub: "A new test opens every Wednesday and Saturday. Do it in one sitting, then press Submit. We go through your answers in the next two lessons.",
+    title: "Matura maths — tests", sub: "A new test opens every Sunday and Thursday. Do it in one sitting, then press Submit. We go through your answers in the next two lessons.",
     test: "Test", opens: "opens", openNow: "open", sent: "sent", locked: "locked", daysLeft: d => d === 1 ? "in 1 day" : `in ${d} days`,
     back: "← All tests", rules: "About 60 minutes. Simple calculator and the CKE formula sheet allowed. Closed questions: choose one answer (1 point). Open questions: write the final answer and your working (2 points).",
     final: "Final answer", work: "Working (all steps)", proof: "Proof (write the full reasoning)", pt: n => n === 1 ? "1 pt" : `${n} pts`,
@@ -119,10 +126,10 @@ const I18N = {
     submit: "Submit test", confirm: "Submit now? You cannot change answers afterwards.", yes: "Yes, submit", no: "Not yet",
     unanswered: n => `${n} question(s) still empty.`, sending: "Sending…", sentOk: "Sent ✓", sentAt: "Submitted",
     fail: "Could not send. Copy the code below and paste it into the Preply chat.", noUrl: "Automatic sending is not set up yet. Copy the code below and paste it into the Preply chat.",
-    copy: "Copy code", copied: "Copied", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", loading: "Loading…", sendFail: "Sending failed. Your answers are saved on this device — check your connection and press Submit again.", needCode: "Open this page with the link from your Preply message.", badCode: "This link is not valid. Use the link from your Preply message.", net: "Cannot reach the server. Check your connection and reload the page."
+    copy: "Copy code", copied: "Copied", upload: "Upload photo", camera: "Take photo", photoHint: "Solved it on paper? Add a photo of your working (up to 4 per task).", removePhoto: "Remove photo", photoFail: "This image could not be read. Try another photo.", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", loading: "Loading…", sendFail: "Sending failed. Your answers are saved on this device — check your connection and press Submit again.", needCode: "Open this page with the link from your Preply message.", badCode: "This link is not valid. Use the link from your Preply message.", net: "Cannot reach the server. Check your connection and reload the page."
   },
   pl: {
-    title: "Matura z matematyki — sprawdziany", sub: "Nowy sprawdzian otwiera się w każdą środę i sobotę. Rozwiąż go za jednym razem i kliknij „Wyślij”. Odpowiedzi omawiamy na dwóch kolejnych lekcjach.",
+    title: "Matura z matematyki — sprawdziany", sub: "Nowy sprawdzian otwiera się w każdą niedzielę i czwartek. Rozwiąż go za jednym razem i kliknij „Wyślij”. Odpowiedzi omawiamy na dwóch kolejnych lekcjach.",
     test: "Sprawdzian", opens: "otwarcie", openNow: "otwarty", sent: "wysłany", locked: "zamknięty", daysLeft: d => d === 1 ? "za 1 dzień" : `za ${d} dni`,
     back: "← Wszystkie sprawdziany", rules: "Około 60 minut. Można korzystać z prostego kalkulatora i karty wzorów CKE. Zadania zamknięte: wybierz jedną odpowiedź (1 pkt). Zadania otwarte: wpisz odpowiedź końcową i rozwiązanie (2 pkt).",
     final: "Odpowiedź końcowa", work: "Rozwiązanie (wszystkie kroki)", proof: "Dowód (zapisz pełne rozumowanie)", pt: n => `${n} pkt`,
@@ -130,7 +137,7 @@ const I18N = {
     submit: "Wyślij sprawdzian", confirm: "Wysłać teraz? Po wysłaniu nie można zmienić odpowiedzi.", yes: "Tak, wyślij", no: "Jeszcze nie",
     unanswered: n => `Bez odpowiedzi: ${n}.`, sending: "Wysyłanie…", sentOk: "Wysłano ✓", sentAt: "Wysłano",
     fail: "Nie udało się wysłać. Skopiuj poniższy kod i wklej go na czacie Preply.", noUrl: "Automatyczne wysyłanie nie jest jeszcze włączone. Skopiuj poniższy kod i wklej go na czacie Preply.",
-    copy: "Kopiuj kod", copied: "Skopiowano", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", loading: "Wczytywanie…", sendFail: "Wysyłanie nie powiodło się. Odpowiedzi są zapisane na tym urządzeniu — sprawdź internet i kliknij „Wyślij” ponownie.", needCode: "Otwórz tę stronę linkiem z wiadomości na Preply.", badCode: "Ten link jest nieprawidłowy. Użyj linku z wiadomości na Preply.", net: "Brak połączenia z serwerem. Sprawdź internet i odśwież stronę."
+    copy: "Kopiuj kod", copied: "Skopiowano", upload: "Dodaj zdjęcie", camera: "Zrób zdjęcie", photoHint: "Rozwiązałeś na kartce? Dodaj zdjęcie rozwiązania (maks. 4 do zadania).", removePhoto: "Usuń zdjęcie", photoFail: "Nie udało się odczytać obrazu. Spróbuj innego zdjęcia.", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", loading: "Wczytywanie…", sendFail: "Wysyłanie nie powiodło się. Odpowiedzi są zapisane na tym urządzeniu — sprawdź internet i kliknij „Wyślij” ponownie.", needCode: "Otwórz tę stronę linkiem z wiadomości na Preply.", badCode: "Ten link jest nieprawidłowy. Użyj linku z wiadomości na Preply.", net: "Brak połączenia z serwerem. Sprawdź internet i odśwież stronę."
   }
 };
 const LETTERS = ["A","B","C","D"];
@@ -241,7 +248,9 @@ function renderTest(n) {
     const d = draft.o[num] || { final: "", work: "" };
     const finalField = it.proof ? "" : `<label for="f${num}">${T().final}</label><input id="f${num}" data-n="${num}" data-k="final" value="${esc(d.final)}" placeholder="${T().finalHint}" ${ro} autocomplete="off">`;
     return `<section class="q ${sent ? "done-q" : ""}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(2)}</span></div>
-      <div class="open">${finalField}<label for="w${num}">${it.proof ? T().proof : T().work}</label><textarea id="w${num}" data-n="${num}" data-k="work" ${ro}>${esc(d.work)}</textarea></div></section>`;
+      <div class="open">${finalField}<label for="w${num}">${it.proof ? T().proof : T().work}</label><textarea id="w${num}" data-n="${num}" data-k="work" ${ro}>${esc(d.work)}</textarea>
+      <div class="photos">${(d.img || []).map((u, i) => `<span class="ph"><img src="${u}" alt="${T().work} ${i + 1}">${ro ? "" : `<button type="button" class="rm" data-n="${num}" data-i="${i}" aria-label="${T().removePhoto}">×</button>`}</span>`).join("")}</div>
+      ${ro || (d.img || []).length >= 4 ? "" : `<div class="upl"><label class="btn ghost sm" for="up${num}">${T().upload}</label><input type="file" id="up${num}" class="pick" data-n="${num}" accept="image/*" multiple hidden><label class="btn ghost sm" for="cam${num}">${T().camera}</label><input type="file" id="cam${num}" class="pick" data-n="${num}" accept="image/*" capture="environment" hidden></div><div class="hintline">${T().photoHint}</div>`}</div></section>`;
   }).join("");
   const sentBlock = sent ? `<div class="status">${sent.ok ? T().sentOk : T().manual}</div><div class="note">${T().sentAt}: ${new Date(sent.at).toLocaleString(lang === "pl" ? "pl-PL" : "en-GB")}</div>${sent.ok ? "" : codeBox(sent.payload, sent.reason)}`
     : closed ? `<p class="note err">${T().closedMsg} ${fmtDT(deadline(t))}.</p>`
@@ -259,8 +268,20 @@ function renderTest(n) {
   document.querySelectorAll(".open input, .open textarea").forEach(el => el.addEventListener("input", () => {
     const num = +el.dataset.n; draft.o[num] = draft.o[num] || { final: "", work: "" }; draft.o[num][el.dataset.k] = el.value; store.set("draft-" + n, draft);
   }));
+  document.querySelectorAll("input.pick").forEach(el => el.addEventListener("change", async () => {
+    const num = +el.dataset.n; draft.o[num] = draft.o[num] || { final: "", work: "" };
+    const list = draft.o[num].img = draft.o[num].img || [];
+    for (const f of [...el.files]) {
+      if (list.length >= 4) break;
+      try { list.push(await shrink(f)); } catch (e) { alertNote(T().photoFail); }
+    }
+    store.set("draft-" + n, draft); renderTest(n);
+  }));
+  document.querySelectorAll("button.rm").forEach(b => b.onclick = () => {
+    const num = +b.dataset.n; draft.o[num].img.splice(+b.dataset.i, 1); store.set("draft-" + n, draft); renderTest(n);
+  });
   document.getElementById("submit").onclick = () => {
-    const empty = items.filter((it, i) => it.t === "c" ? !draft.c[i + 1] : !(draft.o[i + 1] && ((draft.o[i + 1].final || "").trim() || (draft.o[i + 1].work || "").trim()))).length;
+    const empty = items.filter((it, i) => it.t === "c" ? !draft.c[i + 1] : !(draft.o[i + 1] && ((draft.o[i + 1].final || "").trim() || (draft.o[i + 1].work || "").trim() || (draft.o[i + 1].img || []).length))).length;
     document.getElementById("confirm").innerHTML = `<p class="note">${empty ? `<span class="err">${T().unanswered(empty)}</span> ` : ""}${T().confirm}</p>
       <div class="toggles"><button class="btn" id="yes">${T().yes}</button><button class="btn ghost" id="no">${T().no}</button></div>`;
     document.getElementById("no").onclick = () => { document.getElementById("confirm").innerHTML = ""; };
@@ -276,6 +297,21 @@ function wireCopy() {
   b.onclick = () => { const ta = document.getElementById("code");
     navigator.clipboard.writeText(ta.value).then(() => { b.textContent = T().copied; }).catch(() => { ta.select(); }); };
 }
+
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1600 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg", 0.75));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("img")); };
+    img.src = url;
+  });
+}
+function alertNote(msg) { const c = document.getElementById("confirm"); if (c) c.innerHTML = `<p class="note err">${msg}</p>`; }
 
 async function send(t, draft) {
   document.getElementById("confirm").innerHTML = `<p class="note">${T().sending}</p>`;
