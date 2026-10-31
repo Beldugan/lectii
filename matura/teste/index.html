@@ -118,7 +118,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 <script>
 const I18N = {
   en: {
-    title: "Matura maths — tests", sub: "A new test opens every Sunday and Thursday. Do it in one sitting, then press Submit. We go through your answers in the next two lessons.",
+    title: "Matura maths — tests", sub: "A new test opens every Sunday and Thursday at 10:00 (Polish time). Do it in one sitting, then press Submit. We go through your answers in the next two lessons.",
     test: "Test", opens: "opens", openNow: "open", sent: "sent", locked: "locked", daysLeft: d => d === 1 ? "in 1 day" : `in ${d} days`,
     back: "← All tests", rules: "You can submit this test only once. About 60 minutes. Simple calculator and the CKE formula sheet allowed. Closed questions: choose one answer (1 point). Open questions: write the final answer and your working (2 points).",
     final: "Final answer", work: "Working (all steps)", proof: "Proof (write the full reasoning)", pt: n => n === 1 ? "1 pt" : `${n} pts`,
@@ -126,10 +126,10 @@ const I18N = {
     submit: "Submit test", confirm: "Submit now? You cannot change answers afterwards.", yes: "Yes, submit", no: "Not yet",
     unanswered: n => `${n} question(s) still empty.`, sending: "Sending…", sentOk: "Sent ✓", sentAt: "Submitted",
     fail: "Could not send. Copy the code below and paste it into the Preply chat.", noUrl: "Automatic sending is not set up yet. Copy the code below and paste it into the Preply chat.",
-    copy: "Copy code", copied: "Copied", once: "Each test can be submitted only once.", upload: "Upload photo", camera: "Take photo", photoHint: "Solved it on paper? Add a photo of your working (up to 4 per task).", removePhoto: "Remove photo", photoFail: "This image could not be read. Try another photo.", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", loading: "Loading…", sendFail: "Sending failed. Your answers are saved on this device — check your connection and press Submit again.", needCode: "Open this page with the link from your Preply message.", badCode: "This link is not valid. Use the link from your Preply message.", net: "Cannot reach the server. Check your connection and reload the page."
+    copy: "Copy code", copied: "Copied", todayAt: "today at 10:00", once: "Each test can be submitted only once.", upload: "Upload photo", camera: "Take photo", photoHint: "Solved it on paper? Add a photo of your working (up to 4 per task).", removePhoto: "Remove photo", photoFail: "This image could not be read. Try another photo.", until: "open until", closed: "closed", closedMsg: "The deadline for this test has passed:", plTime: "Polish time", manual: "Saved — send the code below", lockedMsg: "This test is not open yet.", loading: "Loading…", sendFail: "Sending failed. Your answers are saved on this device — check your connection and press Submit again.", needCode: "Open this page with the link from your Preply message.", badCode: "This link is not valid. Use the link from your Preply message.", net: "Cannot reach the server. Check your connection and reload the page."
   },
   pl: {
-    title: "Matura z matematyki — sprawdziany", sub: "Nowy sprawdzian otwiera się w każdą niedzielę i czwartek. Rozwiąż go za jednym razem i kliknij „Wyślij”. Odpowiedzi omawiamy na dwóch kolejnych lekcjach.",
+    title: "Matura z matematyki — sprawdziany", sub: "Nowy sprawdzian otwiera się w każdą niedzielę i czwartek o 10:00. Rozwiąż go za jednym razem i kliknij „Wyślij”. Odpowiedzi omawiamy na dwóch kolejnych lekcjach.",
     test: "Sprawdzian", opens: "otwarcie", openNow: "otwarty", sent: "wysłany", locked: "zamknięty", daysLeft: d => d === 1 ? "za 1 dzień" : `za ${d} dni`,
     back: "← Wszystkie sprawdziany", rules: "Sprawdzian można wysłać tylko raz. Około 60 minut. Można korzystać z prostego kalkulatora i karty wzorów CKE. Zadania zamknięte: wybierz jedną odpowiedź (1 pkt). Zadania otwarte: wpisz odpowiedź końcową i rozwiązanie (2 pkt).",
     final: "Odpowiedź końcowa", work: "Rozwiązanie (wszystkie kroki)", proof: "Dowód (zapisz pełne rozumowanie)", pt: n => `${n} pkt`,
@@ -137,7 +137,7 @@ const I18N = {
     submit: "Wyślij sprawdzian", confirm: "Wysłać teraz? Po wysłaniu nie można zmienić odpowiedzi.", yes: "Tak, wyślij", no: "Jeszcze nie",
     unanswered: n => `Bez odpowiedzi: ${n}.`, sending: "Wysyłanie…", sentOk: "Wysłano ✓", sentAt: "Wysłano",
     fail: "Nie udało się wysłać. Skopiuj poniższy kod i wklej go na czacie Preply.", noUrl: "Automatyczne wysyłanie nie jest jeszcze włączone. Skopiuj poniższy kod i wklej go na czacie Preply.",
-    copy: "Kopiuj kod", copied: "Skopiowano", once: "Każdy sprawdzian można wysłać tylko raz.", upload: "Dodaj zdjęcie", camera: "Zrób zdjęcie", photoHint: "Rozwiązałeś na kartce? Dodaj zdjęcie rozwiązania (maks. 4 do zadania).", removePhoto: "Usuń zdjęcie", photoFail: "Nie udało się odczytać obrazu. Spróbuj innego zdjęcia.", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", loading: "Wczytywanie…", sendFail: "Wysyłanie nie powiodło się. Odpowiedzi są zapisane na tym urządzeniu — sprawdź internet i kliknij „Wyślij” ponownie.", needCode: "Otwórz tę stronę linkiem z wiadomości na Preply.", badCode: "Ten link jest nieprawidłowy. Użyj linku z wiadomości na Preply.", net: "Brak połączenia z serwerem. Sprawdź internet i odśwież stronę."
+    copy: "Kopiuj kod", copied: "Skopiowano", todayAt: "dziś o 10:00", once: "Każdy sprawdzian można wysłać tylko raz.", upload: "Dodaj zdjęcie", camera: "Zrób zdjęcie", photoHint: "Rozwiązałeś na kartce? Dodaj zdjęcie rozwiązania (maks. 4 do zadania).", removePhoto: "Usuń zdjęcie", photoFail: "Nie udało się odczytać obrazu. Spróbuj innego zdjęcia.", until: "otwarty do", closed: "zamknięty", closedMsg: "Termin na ten sprawdzian minął:", plTime: "czas polski", manual: "Zapisano — wyślij poniższy kod", lockedMsg: "Ten sprawdzian nie jest jeszcze otwarty.", loading: "Wczytywanie…", sendFail: "Wysyłanie nie powiodło się. Odpowiedzi są zapisane na tym urządzeniu — sprawdź internet i kliknij „Wyślij” ponownie.", needCode: "Otwórz tę stronę linkiem z wiadomości na Preply.", badCode: "Ten link jest nieprawidłowy. Użyj linku z wiadomości na Preply.", net: "Brak połączenia z serwerem. Sprawdź internet i odśwież stronę."
   }
 };
 const LETTERS = ["A","B","C","D"];
@@ -210,9 +210,9 @@ function renderList() {
     if (sent) stamp = `<span class="stamp sent">${T().sent} ✓</span>`;
     else if (open && isClosed(t)) stamp = `<span class="stamp lock">${T().closed}</span>`;
     else if (open) stamp = `<span class="stamp open">${T().openNow} →</span>`;
-    else stamp = `<span class="stamp lock">${T().daysLeft(daysTo(t.d))}</span>`;
+    else stamp = `<span class="stamp lock">${daysTo(t.d) <= 0 ? T().todayAt : T().daysLeft(daysTo(t.d))}</span>`;
     const inner = `<span class="no">${String(t.n).padStart(2, "0")}</span>
-      <span><span class="tt">${esc(lang === "pl" ? t.pl : t.en)}</span><br><span class="dd">${T().opens}: ${fmtDate(t.d)}${deadline(t) ? ` · ${T().until}: ${fmtDT(deadline(t))}` : ""}</span></span>${stamp}`;
+      <span><span class="tt">${esc(lang === "pl" ? t.pl : t.en)}</span><br><span class="dd">${T().opens}: ${fmtDate(t.d)}, 10:00${deadline(t) ? ` · ${T().until}: ${fmtDT(deadline(t))}` : ""}</span></span>${stamp}`;
     return open ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
   }).join("");
   const warn = META_ERR ? `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>` : "";
@@ -223,7 +223,7 @@ function renderList() {
 function renderTest(n) {
   const t = TESTS.find(x => x.n === n);
   if (!t) return renderList();
-  if (!isOpen(t)) { document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}.</p>`; wireHeader(); return; }
+  if (!isOpen(t)) { document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}, 10:00 (${T().plTime}).</p>`; wireHeader(); return; }
   if (!ITEMS[n]) {
     document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a><p class="note">${T().loading}</p>`; wireHeader();
     getItems(t).then(items => { ITEMS[n] = items; if (location.hash === "#t" + n) renderTest(n); })
