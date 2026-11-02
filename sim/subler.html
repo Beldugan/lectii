@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulator șubler</title>
+<style>
+:root{
+  --bg:#14202e; --panel:#1c2b3c; --ink:#f2f5f8; --muted:#a9b8c8; --line:#33465c;
+  --steel:#e9edf1; --steel2:#cfd6dd; --tick:#111; --vern:#f6d77a; --vern2:#e9c254;
+  --hi:#e3342f; --ok:#22a35a; --brand:#2c5aa0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font:18px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;overflow-x:hidden}
+.app{display:flex;flex-direction:column;min-height:100vh;padding:10px 14px;gap:10px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar h1{font-size:1.25rem;margin:0 12px 0 0;font-weight:700}
+.bar .sp{flex:1}
+button,a.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:12px;border:2px solid var(--line);
+  background:var(--panel);color:var(--ink);padding:10px 18px;min-height:52px;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;touch-action:manipulation}
+button:hover,a.btn:hover{filter:brightness(1.15)}
+.cls button{font-size:1.25rem;padding:10px 22px}
+.cls button[aria-pressed="true"]{background:var(--vern);color:#1a1a1a;border-color:var(--vern)}
+#reveal{background:var(--ok);border-color:var(--ok);color:#fff;font-size:1.35rem;padding:12px 28px}
+#reveal.on{background:transparent;color:var(--ok)}
+.stage{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:8px;position:relative}
+.stage .lbl{position:absolute;left:16px;top:8px;color:var(--muted);font-size:.95rem;font-weight:600;pointer-events:none}
+svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;touch-action:none}
+#zoom{cursor:ew-resize}
+#over{cursor:ew-resize}
+.moves{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.moves button{font-size:1.5rem;min-width:96px;justify-content:center}
+.moves small{font-size:.85rem;font-weight:600;opacity:.8}
+#answer{background:#0f1822;border:3px solid var(--ok);border-radius:16px;padding:14px 22px;display:none}
+.stage[hidden]{display:none}
+#answer.show{display:block}
+#answer ol{margin:0;padding-left:1.4em;font-size:clamp(22px,2.4vw,40px);line-height:1.45}
+#answer li{margin:4px 0}
+#answer b{color:var(--vern)}
+#answer .res{font-size:clamp(34px,4.2vw,72px);font-weight:800;margin-top:6px;color:#fff}
+#answer .res span{color:var(--ok)}
+.hint{color:var(--muted);font-size:.9rem;text-align:center}
+body.fs .hint{display:none}
+@media (max-width:700px){ .moves button{min-width:70px;font-size:1.2rem} .cls button{font-size:1rem;padding:8px 12px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <h1>📏 Citirea șublerului</h1>
+    <div class="cls" role="group" aria-label="Clasa de precizie">
+      <button data-p="0.1">0,1 mm</button>
+      <button data-p="0.05">0,05 mm</button>
+      <button data-p="0.02">0,02 mm</button>
+    </div>
+    <div class="sp"></div>
+    <button id="rand" title="Tasta R">🎲 Valoare nouă</button>
+    <button id="fs" title="Tasta F">⛶ Ecran complet</button>
+    <a class="btn" id="back" href="../" hidden>← Materialele orei</a>
+  </div>
+
+  <div class="stage" id="overStage"><span class="lbl">Șublerul</span><svg id="over"></svg></div>
+  <div id="answer"></div>
+  <div class="stage"><span class="lbl">Lupa – zona de citire</span><svg id="zoom"></svg></div>
+
+  <div class="moves">
+    <button data-d="-10" title="Shift + ←">◀◀ <small>1 mm</small></button>
+    <button data-d="-1" title="←">◀ <small id="pl">0,05</small></button>
+    <button id="reveal" title="Spațiu">✔ Arată calculul</button>
+    <button data-d="1" title="→">▶ <small id="pr">0,05</small></button>
+    <button data-d="10" title="Shift + →">▶▶ <small>1 mm</small></button>
+  </div>
+
+  <div class="hint">Trage de cursor (sus sau în lupă) · ← → un pas · Shift + ← → 1 mm · Spațiu = calculul · R = valoare nouă · F = ecran complet</div>
+</div>
+
+<script>
+// Clase de precizie: n diviziuni pe vernier, lungimea vernierului L (mm)
+const CLS = {
+  "0.1":  {p:0.1,  n:10, L:9,  dec:1, labEvery:1},
+  "0.05": {p:0.05, n:20, L:39, dec:2, labEvery:2},
+  "0.02": {p:0.02, n:50, L:49, dec:2, labEvery:5}
+};
+const MAXMM = 150;                    // lungimea riglei
+const NS = "http://www.w3.org/2000/svg";
+const $ = s => document.querySelector(s);
+const fmt = (x, d) => x.toFixed(d).replace(".", ",");
+
+let C = CLS["0.05"], u = 0, shown = false;   // u = poziția în pași de precizie (citire = u·p)
+try { const s = localStorage.getItem("subler-cls"); if (CLS[s]) C = CLS[s]; } catch(e) {}
+
+const P = new URLSearchParams(location.search);
+if (P.get("o")) { $("#back").href = "../o.html?o=" + encodeURIComponent(P.get("o")); $("#back").hidden = false; }
+
+const maxU = () => Math.round((MAXMM - C.L - 1) / C.p);
+const val = () => u * C.p;
+
+function el(tag, attrs, parent, text){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+// ---------- vederea de ansamblu ----------
+function drawOver(){
+  const svg = $("#over"); svg.innerHTML = "";
+  const s = 9, x0 = 70;                         // px pe mm
+  const W = x0 + MAXMM * s + 70, H = 290;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const v = val(), X = mm => x0 + mm * s;
+  const yT = 60, yB = 140;                       // rigla
+  // fălcile fixe
+  el("path", {d:`M${x0-50} ${yT-50} H${x0} V${yB+150} L${x0-14} ${yB+150} L${x0-50} ${yB+40} Z`, fill:"var(--steel2)", stroke:"#8a96a3"}, svg);
+  // piesa măsurată
+  if (v > 0.3) el("rect", {x:X(0), y:yB+40, width:v*s, height:90, rx:6, fill:"#7c8da0", stroke:"#4d5b6a", "stroke-width":2}, svg);
+  // rigla
+  el("rect", {x:x0-50, y:yT, width:MAXMM*s+100, height:yB-yT, rx:6, fill:"var(--steel)", stroke:"#8a96a3"}, svg);
+  for (let i = 0; i <= MAXMM; i++){
+    const h = i % 10 === 0 ? 30 : i % 5 === 0 ? 22 : 14;
+    el("line", {x1:X(i), x2:X(i), y1:yB, y2:yB-h, stroke:"var(--tick)", "stroke-width":1.4}, svg);
+    if (i % 10 === 0) el("text", {x:X(i), y:yB-36, "text-anchor":"middle", "font-size":22, "font-weight":700, fill:"#111"}, svg, i/10);
+  }
+  // cursorul cu vernier și falca mobilă
+  const g = el("g", {id:"slideO"}, svg);
+  const vw = (C.L + 8) * s;
+  el("path", {d:`M${X(v)} ${yT-30} H${X(v)+vw} V${yB+40} H${X(v)+40} L${X(v)+14} ${yB+150} H${X(v)} Z`,
+    fill:"var(--vern)", "fill-opacity":.88, stroke:"#9b7d22", "stroke-width":2}, g);
+  el("rect", {x:X(v)+vw*0.25, y:yT-46, width:vw*0.5, height:16, rx:6, fill:"#9b7d22"}, g);
+  for (let k = 0; k <= C.n; k++){
+    const x = X(v + k * C.L / C.n);
+    el("line", {x1:x, x2:x, y1:yB, y2:yB+(k % C.labEvery === 0 ? 22 : 13), stroke:"#111", "stroke-width":1.2}, g);
+  }
+  el("text", {x:X(v)+vw-8, y:yB+34, "text-anchor":"end", "font-size":16, "font-weight":700, fill:"#3b2f07"}, g, fmt(C.p, C.dec) + " mm");
+  overGeom = {x0, s};
+}
+let overGeom = {x0:70, s:9};
+
+// ---------- lupa ----------
+let zoomGeom = null;
+function drawZoom(){
+  const svg = $("#zoom"); svg.innerHTML = "";
+  const v = val(), N = Math.floor(v + 1e-9), k = Math.round((v - N) / C.p);
+  const a = N - 4, b = N + C.L + 6;                      // fereastra în mm (urmărește cursorul)
+  const W = 1600, pad = 40, s = (W - 2 * pad) / (b - a);
+  const X = mm => pad + (mm - a) * s;
+  const H = 400, yMid = 200;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const fs = Math.max(26, Math.min(54, s * 0.95));
+  // rigla
+  el("rect", {x:0, y:30, width:W, height:yMid-30, fill:"var(--steel)"}, svg);
+  for (let i = Math.ceil(a) - 1; i <= b + 1; i++){
+    if (i < 0 || i > MAXMM) continue;
+    const h = i % 10 === 0 ? 110 : i % 5 === 0 ? 80 : 55;
+    const isN = shown && i === N, isC = shown && i === N + Math.round(k * C.L / C.n + k * C.p);
+    el("line", {x1:X(i), x2:X(i), y1:yMid, y2:yMid-h, stroke:isC ? "var(--hi)" : isN ? "#1565c0" : "var(--tick)",
+      "stroke-width":(isN||isC) ? 5 : 2.6}, svg);
+    if (i % 10 === 0) el("text", {x:X(i), y:yMid-h-10, "text-anchor":"middle", "font-size":fs*1.1, "font-weight":800, fill:"#111"}, svg, i/10);
+    else if (!shown && s > 40 && i % 5 === 0) el("text", {x:X(i), y:yMid-h-8, "text-anchor":"middle", "font-size":fs*0.6, fill:"#555"}, svg, i);
+  }
+  el("text", {x:W-14, y:58, "text-anchor":"end", "font-size":24, fill:"#555", "font-weight":700}, svg, "cm");
+  // vernierul
+  const g = el("g", {}, svg);
+  el("rect", {x:X(v)-pad*0.6, y:yMid, width:(C.L)*s+pad*1.2, height:H-yMid-20, rx:10, fill:"var(--vern)", stroke:"#9b7d22", "stroke-width":3}, g);
+  for (let j = 0; j <= C.n; j++){
+    const x = X(v + j * C.L / C.n), big = j % C.labEvery === 0;
+    const hit = shown && j === k;
+    el("line", {x1:x, x2:x, y1:yMid, y2:yMid + (big ? 80 : 50), stroke:hit ? "var(--hi)" : "#111", "stroke-width":hit ? 5 : 2.4}, g);
+    if (big){
+      // etichete 0…10: la 0,1 fiecare div.; la 0,05 din 2 în 2; la 0,02 din 5 în 5
+      const lab = String(j / C.labEvery);
+      el("text", {x, y:yMid+80+fs*0.95, "text-anchor":"middle", "font-size":fs*0.9, "font-weight":800, fill:"#2a2205"}, g, lab);
+    }
+  }
+  el("text", {x:X(v)+C.L*s+pad*0.5, y:H-34, "text-anchor":"end", "font-size":26, "font-weight":700, fill:"#3b2f07"}, g, fmt(C.p, C.dec) + " mm");
+  // săgeata zero
+  el("path", {d:`M${X(v)} ${yMid+4} l-14 -28 h28 Z`, fill:shown ? "#1565c0" : "#111"}, g);
+  // explicații pe lupă
+  if (shown){
+    el("text", {x:X(N)+8, y:yMid-62, "font-size":30, "font-weight":800, fill:"#1565c0"}, svg, N + " mm");
+    const xk = X(v + k * C.L / C.n);
+    el("text", {x:xk+8, y:yMid+80+fs*0.95+44, "text-anchor":"start", "font-size":30, "font-weight":800, fill:"var(--hi)"}, svg, "div. " + k);
+  }
+  zoomGeom = {s, W};
+}
+
+// ---------- calculul ----------
+function drawAnswer(){
+  const box = $("#answer");
+  $("#overStage").hidden = shown;
+  if (!shown){ box.className = ""; box.innerHTML = ""; return; }
+  const v = val(), N = Math.floor(v + 1e-9), k = Math.round((v - N) / C.p);
+  const frac = k * C.p;
+  box.className = "show";
+  box.innerHTML = `<ol>
+    <li>Zero-ul vernierului a trecut de diviziunea <b>${N} mm</b> a riglei → partea întreagă: <b>${N} mm</b></li>
+    <li>Diviziunea <b style="color:#ff6b66">${k}</b> a vernierului coincide cu o diviziune a riglei
+        → zecimi/sutimi: <b>${k} × ${fmt(C.p, C.dec)} mm = ${fmt(frac, C.dec)} mm</b></li>
+  </ol>
+  <div class="res">Citirea: ${N} + ${fmt(frac, C.dec)} = <span>${fmt(v, C.dec)} mm</span></div>`;
+}
+
+function render(){
+  document.querySelectorAll(".cls button").forEach(b => b.setAttribute("aria-pressed", CLS[b.dataset.p] === C));
+  $("#pl").textContent = $("#pr").textContent = fmt(C.p, C.dec);
+  const r = $("#reveal");
+  r.textContent = shown ? "✖ Ascunde calculul" : "✔ Arată calculul";
+  r.classList.toggle("on", shown);
+  drawOver(); drawZoom(); drawAnswer();
+}
+function setU(nu){
+  nu = Math.max(0, Math.min(maxU(), Math.round(nu)));
+  if (nu !== u){ u = nu; shown = false; }
+  render();
+}
+function randomU(){
+  let nu; do { nu = Math.floor(Math.random() * Math.round(120 / C.p)) + Math.round(3 / C.p); }
+  while (nu % Math.round(1 / C.p) === 0 || nu === u);   // evită valori întregi
+  shown = false; u = nu; render();
+}
+
+// ---------- comenzi ----------
+document.querySelectorAll(".cls button").forEach(b => b.onclick = () => {
+  const mm = val(); C = CLS[b.dataset.p];
+  try { localStorage.setItem("subler-cls", b.dataset.p); } catch(e) {}
+  shown = false; u = Math.min(maxU(), Math.round(mm / C.p)); render();
+});
+document.querySelectorAll(".moves button[data-d]").forEach(b => b.onclick = () => {
+  const d = +b.dataset.d; setU(u + (Math.abs(d) === 10 ? Math.sign(d) * Math.round(1 / C.p) : d));
+});
+$("#reveal").onclick = () => { shown = !shown; render(); };
+$("#rand").onclick = randomU;
+$("#fs").onclick = () => {
+  document.body.classList.toggle("fs");
+  const el = document.documentElement;
+  if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+  else if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+};
+addEventListener("keydown", e => {
+  if (e.target.closest && e.target.closest("input,textarea")) return;
+  const step = e.shiftKey ? Math.round(1 / C.p) : 1;
+  if (e.key === "ArrowRight"){ setU(u + step); e.preventDefault(); }
+  else if (e.key === "ArrowLeft"){ setU(u - step); e.preventDefault(); }
+  else if (e.key === " " || e.key === "Enter"){ $("#reveal").click(); e.preventDefault(); }
+  else if (e.key === "r" || e.key === "R") randomU();
+  else if (e.key === "f" || e.key === "F") $("#fs").click();
+  else if (e.key === "1") document.querySelectorAll(".cls button")[0].click();
+  else if (e.key === "2") document.querySelectorAll(".cls button")[1].click();
+  else if (e.key === "3") document.querySelectorAll(".cls button")[2].click();
+});
+
+// tragere cu mouse-ul / degetul
+function dragOn(svg, pxPerMm, invert){
+  let start = null;
+  svg.addEventListener("pointerdown", e => {
+    const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+    start = {x:e.clientX, u, k: vb.width / r.width};
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener("pointermove", e => {
+    if (!start) return;
+    const dmm = (e.clientX - start.x) * start.k / pxPerMm() * (invert ? -1 : 1);
+    setU(start.u + dmm / C.p);
+  });
+  const end = () => start = null;
+  svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+}
+dragOn($("#over"), () => overGeom.s, false);
+dragOn($("#zoom"), () => zoomGeom.s, false);
+
+randomU();
+</script>
+</body>
+</html>

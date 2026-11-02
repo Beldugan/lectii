@@ -368,6 +368,8 @@ def main():
     ap.add_argument("--only-week", type=int)
     A = ap.parse_args()
 
+    # simulatoare interactive legate de anumite ore (id oră → (pagina, eticheta butonului))
+    SIMS = {"9e-2026-11-02-1000-m2-lt": ("sim/subler.html", "Simulator șubler – exerciții de citire")}
     evs = [x for x in (parse_event(ev) for ev in json.load(open(A.events))) if x]
     evs.sort(key=lambda e: (e["date"], e["time"]))
     warnings = []
@@ -381,6 +383,8 @@ def main():
             rec = {k: e[k] for k in ("id", "cls", "type", "mod", "title", "date", "time", "end", "week", "evals")}
             rec["module"] = MOD[(e["cls"], e["mod"])]["name"] if e["mod"] else TYPE_NAME[e["type"]]
             rec["parts"] = [lbl for lbl, *_ in pub]
+            if e["id"] in SIMS:
+                rec["sim"], rec["simLabel"] = SIMS[e["id"]]
             for kind, parts, locked in (("pdf", pub, False), ("test", lock, True)):
                 if not parts:
                     continue

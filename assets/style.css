@@ -65,6 +65,7 @@ details.week[open] summary{background:var(--accent)}
   padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);
   text-decoration:none;min-height:44px}
 .btn.primary{background:#1f3b6b;border-color:#1f3b6b;color:#fff}
+.btn.sim{background:#0f7b6c;border-color:#0f7b6c;color:#fff}
 .btn.lock{border-color:var(--warn);color:var(--warn)}
 .btn:hover{filter:brightness(1.06)}
 .btn[hidden]{display:none}
