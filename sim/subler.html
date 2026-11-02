@@ -18,20 +18,22 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
 .bar h1{font-size:1.25rem;margin:0 12px 0 0;font-weight:700}
 .bar .sp{flex:1}
 button,a.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:12px;border:2px solid var(--line);
-  background:var(--panel);color:var(--ink);padding:10px 18px;min-height:52px;text-decoration:none;
+  background:var(--panel);color:var(--ink);padding:12px 22px;min-height:72px;text-decoration:none;
   display:inline-flex;align-items:center;gap:8px;touch-action:manipulation}
 button:hover,a.btn:hover{filter:brightness(1.15)}
-.cls button{font-size:1.25rem;padding:10px 22px}
+.cls button{font-size:1.5rem;padding:12px 26px}
 .cls button[aria-pressed="true"]{background:var(--vern);color:#1a1a1a;border-color:var(--vern)}
 #reveal{background:var(--ok);border-color:var(--ok);color:#fff;font-size:1.35rem;padding:12px 28px}
 #reveal.on{background:transparent;color:var(--ok)}
 .stage{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:8px;position:relative}
 .stage .lbl{position:absolute;left:16px;top:8px;color:var(--muted);font-size:.95rem;font-weight:600;pointer-events:none}
-svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;touch-action:none}
+svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+html,body{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #zoom{cursor:ew-resize}
 #over{cursor:ew-resize}
 .moves{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.moves button{font-size:1.5rem;min-width:96px;justify-content:center}
+.moves button{font-size:1.9rem;min-width:130px;min-height:84px;justify-content:center}
+#reveal{min-width:320px}
 .moves small{font-size:.85rem;font-weight:600;opacity:.8}
 #answer{background:#0f1822;border:3px solid var(--ok);border-radius:16px;padding:14px 22px;display:none}
 .stage[hidden]{display:none}
@@ -140,11 +142,13 @@ function drawOver(){
 let overGeom = {x0:70, s:9};
 
 // ---------- lupa ----------
-let zoomGeom = null;
+let zoomGeom = null, zoomFreeze = null;   // în timpul tragerii, lupa nu se mută (vernierul rămâne sub deget)
 function drawZoom(){
   const svg = $("#zoom"); svg.innerHTML = "";
   const v = val(), N = Math.floor(v + 1e-9), k = Math.round((v - N) / C.p);
-  const a = N - 4, b = N + C.L + 6;                      // fereastra în mm (urmărește cursorul)
+  let a = N - 4;                                        // fereastra în mm (urmărește cursorul)
+  if (zoomFreeze != null && v >= zoomFreeze + 1 && v <= zoomFreeze + 6) a = zoomFreeze;
+  const b = a + C.L + 10;
   const W = 1600, pad = 40, s = (W - 2 * pad) / (b - a);
   const X = mm => pad + (mm - a) * s;
   const H = 400, yMid = 200;
@@ -253,23 +257,27 @@ addEventListener("keydown", e => {
 });
 
 // tragere cu mouse-ul / degetul
-function dragOn(svg, pxPerMm, invert){
+function dragOn(svg, pxPerMm, isZoom){
   let start = null;
   svg.addEventListener("pointerdown", e => {
+    if (start) return;                                   // ignoră al doilea deget
     const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
-    start = {x:e.clientX, u, k: vb.width / r.width};
-    svg.setPointerCapture(e.pointerId);
+    start = {id:e.pointerId, x:e.clientX, u, k: vb.width / r.width, s: pxPerMm()};
+    if (isZoom) zoomFreeze = Math.floor(val() + 1e-9) - 4;
+    try { svg.setPointerCapture(e.pointerId); } catch(_) {}
+    e.preventDefault();
   });
   svg.addEventListener("pointermove", e => {
-    if (!start) return;
-    const dmm = (e.clientX - start.x) * start.k / pxPerMm() * (invert ? -1 : 1);
+    if (!start || e.pointerId !== start.id) return;
+    const dmm = (e.clientX - start.x) * start.k / start.s;
     setU(start.u + dmm / C.p);
   });
-  const end = () => start = null;
+  const end = e => { if (start && e.pointerId === start.id){ start = null; if (isZoom){ zoomFreeze = null; render(); } } };
   svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
 }
+addEventListener("contextmenu", e => e.preventDefault());   // apăsare lungă pe tablă
 dragOn($("#over"), () => overGeom.s, false);
-dragOn($("#zoom"), () => zoomGeom.s, false);
+dragOn($("#zoom"), () => zoomGeom.s, true);
 
 randomU();
 </script>
