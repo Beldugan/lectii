@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atelier virtual 9E</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: o bară de control fixă (secțiuni, echipe, cronometru) + o „planșă” mare, câte o activitate pe ecran, pentru tabla smart. Aspect unic, deschis, contrast mare pentru proiector. */
+:root{
+  --bg:#eef2f5; --paper:#ffffff; --ink:#14212b; --muted:#53636f; --line:#c9d3db;
+  --steel:#2b5f8a; --steel-2:#dce8f2; --spark:#e07a12; --spark-2:#fdebd6;
+  --ok:#1f7a45; --ok-2:#dcf1e4; --bad:#b3261e; --bad-2:#f8dedb; --light:#ffd54a;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Arial,sans-serif;
+  --mono:"JetBrains Mono",Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:20px;line-height:1.4}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ink);color:#fff;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+.brand{font-family:var(--display);font-size:26px;letter-spacing:.02em;white-space:nowrap}
+.brand small{font-family:var(--body);font-size:14px;opacity:.75;margin-left:8px;letter-spacing:0}
+.teams{display:flex;gap:8px;flex-wrap:wrap}
+.team{display:flex;align-items:center;gap:6px;background:#22343f;border-radius:10px;padding:4px 6px 4px 12px}
+.team b{font-family:var(--display);font-size:22px;min-width:24px;text-align:center;font-variant-numeric:tabular-nums}
+.team span{font-size:15px}
+.team button{background:#344b58;color:#fff;width:38px;height:38px;font-size:22px;line-height:1}
+.timer{margin-left:auto;display:flex;align-items:center;gap:6px}
+.timer output{font-family:var(--mono);font-size:24px;min-width:84px;text-align:center;font-variant-numeric:tabular-nums}
+.timer output.done{color:var(--light)}
+.timer button{background:#344b58;color:#fff;padding:8px 12px;font-size:16px}
+.wrap{display:grid;grid-template-columns:260px 1fr;gap:18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px}
+nav{display:flex;flex-direction:column;gap:6px}
+nav h3{font-family:var(--display);font-size:20px;margin:10px 0 2px;color:var(--steel);letter-spacing:.03em;text-transform:uppercase}
+nav h3 small{display:block;font-family:var(--body);font-size:14px;color:var(--muted);text-transform:none;letter-spacing:0}
+nav button{background:var(--paper);color:var(--ink);text-align:left;padding:10px 12px;border:1px solid var(--line);font-size:17px;display:flex;gap:8px;justify-content:space-between}
+nav button em{font-style:normal;color:var(--muted);font-size:14px;white-space:nowrap}
+nav button[aria-current="true"]{background:var(--steel);color:#fff;border-color:var(--steel)}
+nav button[aria-current="true"] em{color:#dbe7f1}
+main{min-width:0}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:26px 28px;min-height:70vh}
+.sheet h1{font-family:var(--display);font-size:44px;line-height:1.05;margin:0 0 6px;text-wrap:balance}
+.eyebrow{font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--spark);font-weight:700}
+.lead{color:var(--muted);max-width:62ch;margin:6px 0 18px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--paper);min-width:0}
+.big{font-family:var(--display);font-size:30px}
+.btn{background:var(--steel);color:#fff;padding:12px 18px;font-weight:700}
+.btn.alt{background:var(--steel-2);color:var(--steel)}
+.btn.warm{background:var(--spark);color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.opt{background:var(--steel-2);color:var(--ink);padding:14px 16px;font-size:20px;text-align:left;min-height:58px}
+.opt.right{background:var(--ok-2);outline:3px solid var(--ok)}
+.opt.wrong{background:var(--bad-2);outline:3px solid var(--bad)}
+.fb{min-height:32px;font-weight:600;margin-top:10px}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:15px;font-weight:700}
+.pill.ok{background:var(--ok-2);color:var(--ok)}.pill.no{background:var(--bad-2);color:var(--bad)}
+svg{max-width:100%;height:auto;display:block}
+.fig{background:#f6f9fb;border-radius:10px;padding:8px}
+table{border-collapse:collapse;width:100%;font-size:19px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:middle}
+th{background:var(--steel-2);font-size:16px}
+.tbl{overflow-x:auto}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{background:#fff;color:var(--ink);padding:8px 12px;border-radius:0;font-size:17px}
+.seg button.on{background:var(--steel);color:#fff}
+.seg button.on.okc{background:var(--ok)}.seg button.on.noc{background:var(--bad)}
+input[type=range]{width:100%;height:44px;accent-color:var(--spark)}
+.note{font-size:16px;color:var(--muted)}
+.steps{display:grid;gap:8px}
+.step{background:var(--steel-2);padding:12px 14px;text-align:left;font-size:19px;display:flex;gap:10px;align-items:center}
+.step b{font-family:var(--mono);background:var(--steel);color:#fff;border-radius:8px;min-width:34px;text-align:center;padding:2px 0}
+.step.used{opacity:.35}
+.flip{min-height:140px;display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:left;background:var(--steel-2);padding:16px;font-size:20px}
+.flip .ans{display:none;font-size:17px}
+.flip.open .ans{display:block}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}nav{flex-direction:row;flex-wrap:wrap}nav h3{width:100%}.g3{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.g2,.g3{grid-template-columns:1fr}.sheet{padding:18px 16px}.sheet h1{font-size:34px}body{font-size:18px}.timer{margin-left:0}}
+@media (prefers-reduced-motion:no-preference){.opt,.step,.flip{transition:background .15s}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="brand">Atelier virtual · 9E<small>luni, 9 noiembrie</small></div>
+  <div class="teams" id="teams"></div>
+  <div class="timer">
+    <output id="clock">10:00</output>
+    <button id="t5">5′</button><button id="t10">10′</button><button id="tgo">Start</button><button id="treset">Reset</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main><section class="sheet" id="sheet"></section></main>
+</div>
+
+<script>
+/* ---------- echipe & cronometru ---------- */
+const TEAMS=[{n:"Echipa 1",s:0},{n:"Echipa 2",s:0},{n:"Echipa 3",s:0},{n:"Echipa 4",s:0}];
+function drawTeams(){const el=document.getElementById('teams');el.innerHTML='';TEAMS.forEach((t,i)=>{const d=document.createElement('div');d.className='team';d.innerHTML=`<span>${t.n}</span><button aria-label="minus ${t.n}">−</button><b>${t.s}</b><button aria-label="plus ${t.n}">+</button>`;const[b1,,b2]=d.querySelectorAll('button,b');d.querySelectorAll('button')[0].onclick=()=>{t.s=Math.max(0,t.s-1);drawTeams()};d.querySelectorAll('button')[1].onclick=()=>{t.s++;drawTeams()};el.appendChild(d)})}
+drawTeams();
+let left=600,tick=null;const clock=document.getElementById('clock');
+function show(){clock.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');clock.classList.toggle('done',left===0)}
+function setT(s){left=s;stopT();show()}
+function stopT(){clearInterval(tick);tick=null;document.getElementById('tgo').textContent='Start'}
+document.getElementById('t5').onclick=()=>setT(300);document.getElementById('t10').onclick=()=>setT(600);
+document.getElementById('treset').onclick=()=>setT(600);
+document.getElementById('tgo').onclick=()=>{if(tick){stopT();return}document.getElementById('tgo').textContent='Pauză';tick=setInterval(()=>{if(left>0){left--;show()}if(left===0)stopT()},1000)};
+show();
+
+/* ---------- utilitare ---------- */
+const $=(h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function quiz(host,items){ // items: {q, opts:[...], a:index, why, fig?}
+  let i=0,score=0;
+  function render(){host.innerHTML='';
+    if(i>=items.length){host.appendChild($(`<div><p class="big">Gata: ${score} din ${items.length} corecte.</p><div class="row"><button class="btn" id="again">Reia</button></div></div>`));host.querySelector('#again').onclick=()=>{i=0;score=0;render()};return}
+    const it=items[i];
+    const box=$(`<div><p class="note">Întrebarea ${i+1} din ${items.length}</p><p class="big" style="margin:4px 0 12px">${it.q}</p>${it.fig?`<div class="fig" style="max-width:460px;margin-bottom:12px">${it.fig}</div>`:''}<div class="grid g2"></div><p class="fb"></p><div class="row"><button class="btn" hidden>Următoarea →</button></div></div>`);
+    const g=box.querySelector('.grid'),fb=box.querySelector('.fb'),nx=box.querySelector('.btn');let done=false;
+    it.opts.forEach((o,k)=>{const b=$(`<button class="opt">${o}</button>`);b.onclick=()=>{if(done)return;done=true;
+      if(k===it.a){b.classList.add('right');score++;fb.className='fb ok';fb.textContent='Corect. '+(it.why||'')}
+      else{b.classList.add('wrong');g.children[it.a].classList.add('right');fb.className='fb no';fb.textContent='Nu. '+(it.why||'')}
+      nx.hidden=false};g.appendChild(b)});
+    nx.onclick=()=>{i++;render()};host.appendChild(box)}
+  render()}
+
+/* ---------- desene ---------- */
+const S={
+ echerSimplu:`<svg viewBox="0 0 220 160"><path d="M30 20h16v104h144v16H30z" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><text x="60" y="80" font-size="16" fill="#14212b">90°</text></svg>`,
+ echerTalpa:`<svg viewBox="0 0 220 160"><path d="M30 20h12v104h148v16H30z" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="18" y="20" width="36" height="120" fill="#6f8aa0" stroke="#2b5f8a" stroke-width="2"/><text x="64" y="80" font-size="16" fill="#14212b">90°, cu talpă</text></svg>`,
+ echer120:`<svg viewBox="0 0 220 160"><path d="M110 30 L30 125 L42 135 L110 55 L178 135 L190 125 Z" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><text x="94" y="110" font-size="16" fill="#14212b">120°</text></svg>`,
+ echer45:`<svg viewBox="0 0 220 160"><path d="M30 135 L190 135 L30 25 Z M48 117 L48 62 L128 117 Z" fill="#9fb4c4" fill-rule="evenodd" stroke="#2b5f8a" stroke-width="2"/><text x="140" y="128" font-size="16" fill="#14212b">45°</text></svg>`,
+ riglaMuchie:`<svg viewBox="0 0 220 160"><path d="M20 70 L200 70 L200 86 L20 86 Z" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><path d="M20 86 L200 86 L110 104 Z" fill="#6f8aa0" stroke="#2b5f8a" stroke-width="2"/><text x="36" y="58" font-size="15" fill="#14212b">muchie ascuțită (tăiș)</text></svg>`,
+ riglaLata:`<svg viewBox="0 0 220 160"><rect x="20" y="60" width="180" height="40" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="20" y="100" width="180" height="8" fill="#6f8aa0"/><text x="52" y="52" font-size="15" fill="#14212b">față lată, rectificată</text></svg>`,
+};
+
+/* ---------- activitățile ---------- */
+const ACT=[
+ {grp:"M II · Ora 1–2", sub:"Controlul pieselor cu echerul și rigla · 11:00–12:50", id:"start", t:"Pornim", min:5, run:h=>{
+   h.innerHTML=`<p class="eyebrow">M II · Lăcătușerie generală · S9</p><h1>Ce verificăm la o piesă după pilire?</h1>
+   <p class="lead">Azi lucrăm fără atelier. Facem aceleași verificări, pe piese virtuale: unghiul drept, planeitatea și rectilinitatea suprafețelor.</p>
+   <div class="grid g3">
+    <div class="card"><p class="big">Perpendicularitate</p><p>Două fețe fac între ele exact 90°. Verificăm cu <b>echerul</b>.</p></div>
+    <div class="card"><p class="big">Rectilinitate</p><p>O muchie sau o generatoare este dreaptă. Verificăm cu <b>rigla cu muchie</b>.</p></div>
+    <div class="card"><p class="big">Planeitate</p><p>O suprafață este plană. Verificăm cu rigla pe mai multe direcții sau cu <b>rigla lată</b> și vopsea.</p></div>
+   </div>
+   <div class="card" style="margin-top:14px"><p class="big">Metoda fantei de lumină</p><p>Așezăm instrumentul pe piesă, cu sursa de lumină în spatele lor, și privim la nivelul ochilor. Unde apare o dungă de lumină, piesa nu este dreaptă. Fanta mai mare o măsurăm cu <b>lerele</b> (calibre pentru interstiții).</p></div>
+   <p class="note" style="margin-top:12px">Echipele primesc puncte în bara de sus. Cronometrul pornește din „Start”.</p>`}},
+ {id:"instr", t:"Recunoaște instrumentul", min:10, run:h=>{
+   h.innerHTML=`<p class="eyebrow">Joc pe echipe</p><h1>Ce instrument este?</h1><p class="lead">Fiecare echipă răspunde pe rând. Răspuns corect: +1 punct.</p><div id="q"></div>`;
+   quiz(h.querySelector('#q'),shuffle([
+    {q:"Cum se numește?",fig:S.echerSimplu,opts:["Echer simplu de 90°","Riglă cu muchie","Echer de 120°","Echer de 45°"],a:0,why:"Are laturile de aceeași grosime și verifică unghiuri drepte."},
+    {q:"Cum se numește?",fig:S.echerTalpa,opts:["Echer de 45°","Echer cu talpă","Riglă lată","Raportor"],a:1,why:"Talpa groasă se sprijină sigur pe fața de bază a piesei."},
+    {q:"Ce unghi verifică acest echer?",fig:S.echer120,opts:["90°","45°","120°","60°"],a:2,why:"Echerul de 120° se folosește la piese hexagonale, de exemplu la piulițe."},
+    {q:"Ce unghi verifică acest echer?",fig:S.echer45,opts:["45°","120°","30°","90°"],a:0,why:"Verifică teșiturile de 45° (și unghiul suplementar de 135°)."},
+    {q:"Ce verificăm cu acest instrument?",fig:S.riglaMuchie,opts:["Unghiul de 90°","Rectilinitatea, prin fanta de lumină","Diametrul","Filetul"],a:1,why:"Rigla cu muchie ascuțită dă o fantă de lumină foarte fină."},
+    {q:"Ce verificăm cu acest instrument?",fig:S.riglaLata,opts:["Planeitatea, prin metoda petelor de vopsea","Unghiul de 120°","Lungimea","Duritatea"],a:0,why:"Fața lată se vopsește subțire. Petele lăsate pe piesă arată zonele care ating."}
+   ]))}},
+ {id:"fanta", t:"Simulator: fanta de lumină", min:25, run:h=>{
+   h.innerHTML=`<p class="eyebrow">Simulator</p><h1>Unde trece lumina?</h1>
+   <p class="lead">Mută rigla de-a lungul piesei. Unde vezi o dungă galbenă, încearcă lerele. Toleranța piesei: <b>0,05 mm</b>.</p>
+   <div class="row" style="margin-bottom:10px"><span>Piesa:</span><div class="seg" id="pick"></div><button class="btn alt" id="newp">Piesă nouă la întâmplare</button></div>
+   <div class="fig"><svg id="sim" viewBox="0 0 900 260"></svg></div>
+   <label for="pos" class="note">Poziția riglei pe piesă</label><input id="pos" type="range" min="0" max="100" value="10">
+   <div class="row" style="margin-top:6px"><span>Introdu lera:</span><div class="row" id="leras"></div></div>
+   <p class="fb" id="lfb"></p>
+   <div class="row"><span>Decizia echipei:</span><button class="btn" id="dok">Conformă</button><button class="btn warm" id="dno">Neconformă</button></div>
+   <p class="fb" id="dfb"></p>`;
+   const pieces=[{n:"A",def:[0,0,0,0,0]},{n:"B",def:[0,.02,.03,.02,0]},{n:"C",def:[0,.04,.09,.05,0]},{n:"D",def:[.12,.06,0,0,0]},{n:"E",def:[0,0,.01,.0,.02]},{n:"F",def:[0,.03,.06,.15,.2]}];
+   let cur=pieces[2];const svg=h.querySelector('#sim'),pos=h.querySelector('#pos');
+   const gapAt=x=>{const d=cur.def,f=x/100*(d.length-1),i=Math.floor(f),t=f-i;return i>=d.length-1?d[d.length-1]:d[i]*(1-t)+d[i+1]*t};
+   function draw(){const x=+pos.value,gmax=Math.max(...cur.def,0.0001);let pts=[];for(let k=0;k<=100;k+=2){pts.push(`${100+k*7},${170+gapAt(k)*400}`)}
+     const rx=100+x*7,g=gapAt(x);
+     svg.innerHTML=`<rect x="0" y="0" width="900" height="260" fill="#1b2a35"/>
+     <polygon points="100,250 ${pts.join(' ')} 800,250" fill="#8b9aa6" stroke="#cfd8df" stroke-width="2"/>
+     <text x="110" y="240" fill="#e8eef2" font-size="18">piesa ${cur.n}</text>
+     <rect x="${rx-90}" y="120" width="180" height="50" fill="#9fb4c4" stroke="#e8eef2" stroke-width="2" rx="3"/>
+     <text x="${rx-40}" y="152" fill="#14212b" font-size="18">riglă</text>
+     ${[...Array(19)].map((_,j)=>{const xx=rx-90+j*10,gg=gapAt(Math.max(0,Math.min(100,(xx-100)/7)));return gg>0.004?`<rect x="${xx}" y="170" width="10" height="${Math.min(60,gg*400)}" fill="#ffd54a" opacity="${Math.min(1,.35+gg*8)}"/>`:''}).join('')}
+     <text x="600" y="40" fill="#ffd54a" font-size="20">${g>0.004?'se vede lumină':'nu trece lumina'}</text>`;}
+   const pick=h.querySelector('#pick');pieces.forEach(p=>{const b=$(`<button>${p.n}</button>`);b.onclick=()=>{cur=p;sel();draw()};pick.appendChild(b)});
+   function sel(){[...pick.children].forEach((b,i)=>b.classList.toggle('on',pieces[i]===cur));h.querySelector('#lfb').textContent='';h.querySelector('#dfb').textContent=''}
+   h.querySelector('#newp').onclick=()=>{cur=pieces[Math.floor(Math.random()*pieces.length)];sel();draw()};
+   const L=h.querySelector('#leras');[0.03,0.05,0.10,0.20].forEach(v=>{const b=$(`<button class="btn alt num">${v.toFixed(2).replace('.',',')} mm</button>`);b.onclick=()=>{const g=gapAt(+pos.value);const fb=h.querySelector('#lfb');
+     if(g>=v){fb.className='fb no';fb.textContent=`Lera de ${v.toFixed(2).replace('.',',')} mm intră: fanta e de cel puțin ${v.toFixed(2).replace('.',',')} mm aici.`}else{fb.className='fb ok';fb.textContent=`Lera de ${v.toFixed(2).replace('.',',')} mm nu intră: fanta e mai mică.`}};L.appendChild(b)});
+   const decide=ok=>{const worst=Math.max(...cur.def),conf=worst<=0.05;const fb=h.querySelector('#dfb');const right=ok===conf;fb.className='fb '+(right?'ok':'no');
+     fb.textContent=(right?'Corect. ':'Nu. ')+`Fanta maximă la piesa ${cur.n} este ${worst.toFixed(2).replace('.',',')} mm, deci piesa este ${conf?'conformă':'neconformă'} (toleranță 0,05 mm).`};
+   h.querySelector('#dok').onclick=()=>decide(true);h.querySelector('#dno').onclick=()=>decide(false);
+   pos.oninput=()=>{draw();h.querySelector('#lfb').textContent=''};sel();draw()}},
+ {id:"fisa", t:"Fișa de control", min:30, run:h=>{
+   const P=[
+    {c:"E1",op:"Perpendicularitate fețe 1–2",tol:"0,05",m:"0,03",ok:true},
+    {c:"E2",op:"Perpendicularitate fețe 1–3",tol:"0,05",m:"0,08",ok:false},
+    {c:"E3",op:"Rectilinitate muchie lungă",tol:"0,03",m:"0,02",ok:true},
+    {c:"E4",op:"Planeitate față de bază",tol:"0,05",m:"0,05",ok:true},
+    {c:"E5",op:"Perpendicularitate (echer cu talpă)",tol:"0,05",m:"0,12",ok:false},
+    {c:"E6",op:"Planeitate față de bază",tol:"0,03",m:"0,06",ok:false}];
+   h.innerHTML=`<p class="eyebrow">Lucru pe echipe · completăm împreună</p><h1>Fișa de control a epruvetelor</h1>
+   <p class="lead">Fiecare rând arată ce a măsurat controlorul cu lerele. Echipa decide dacă epruveta este conformă și spune ce trebuie corectat.</p>
+   <div class="tbl"><table><thead><tr><th>Epruveta</th><th>Ce verificăm</th><th>Toleranța (mm)</th><th>Fanta măsurată (mm)</th><th>Decizia</th><th>Rezultat</th></tr></thead><tbody id="tb"></tbody></table></div>
+   <div class="row" style="margin-top:14px"><button class="btn" id="chk">Verifică fișa</button><button class="btn alt" id="clr">Golește</button></div>
+   <p class="fb" id="ffb"></p>
+   <div class="card" style="margin-top:10px"><p><b>Discuție:</b> ce faceți cu o epruvetă neconformă? (o mai pilim pe fața care nu e dreaptă, verificăm din nou, iar dacă a ieșit sub cotă o notăm ca rebut.)</p></div>`;
+   const tb=h.querySelector('#tb'),st={};
+   P.forEach(p=>{const tr=$(`<tr><td><b>${p.c}</b></td><td>${p.op}</td><td class="num">${p.tol}</td><td class="num">${p.m}</td><td><div class="seg"><button data-v="1">Conformă</button><button data-v="0">Neconformă</button></div></td><td class="res"></td></tr>`);
+     tr.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{st[p.c]=b.dataset.v==='1';tr.querySelectorAll('.seg button').forEach(x=>x.classList.remove('on','okc','noc'));b.classList.add('on',b.dataset.v==='1'?'okc':'noc');tr.querySelector('.res').innerHTML=''});
+     tb.appendChild(tr)});
+   h.querySelector('#chk').onclick=()=>{let good=0;P.forEach((p,i)=>{const cell=tb.children[i].querySelector('.res');if(!(p.c in st)){cell.innerHTML='<span class="note">fără decizie</span>';return}const r=st[p.c]===p.ok;if(r)good++;cell.innerHTML=`<span class="pill ${r?'ok':'no'}">${r?'corect':'greșit'}</span>`});
+     const f=h.querySelector('#ffb');f.className='fb '+(good===P.length?'ok':'no');f.textContent=`${good} din ${P.length} decizii corecte. Regula: piesa e conformă dacă fanta măsurată ≤ toleranța.`};
+   h.querySelector('#clr').onclick=()=>{for(const k in st)delete st[k];tb.querySelectorAll('.seg button').forEach(x=>x.classList.remove('on','okc','noc'));tb.querySelectorAll('.res').forEach(c=>c.innerHTML='');h.querySelector('#ffb').textContent=''}}},
+ {id:"nssm", t:"Adevărat sau fals: lucrul corect", min:10, run:h=>{
+   const Q=[["Piesa se curăță de bavuri și de așchii înainte de verificare.",1,"Bavurile ridică instrumentul și dau o fantă falsă."],
+    ["Echerul se apasă cu forță pe piesă, ca să nu se miște.",0,"Se așază ușor; apăsarea deformează și uzează instrumentul."],
+    ["La fanta de lumină, sursa de lumină stă în spatele piesei, iar ochiul la nivelul ei.",1,"Doar așa se vede dunga de lumină."],
+    ["Echerul căzut pe jos se poate folosi mai departe fără verificare.",0,"Se verifică: un echer lovit își poate pierde unghiul de 90°."],
+    ["Planeitatea se verifică pe o singură direcție, de-a lungul piesei.",0,"Se verifică pe mai multe direcții: lungime, lățime și diagonale."],
+    ["După lucru, instrumentele de verificare se șterg și se păstrează în cutia lor.",1,"Le ferim de rugină și de lovituri."]];
+   h.innerHTML=`<p class="eyebrow">Atinge cartonașul ca să vezi răspunsul</p><h1>Adevărat sau fals?</h1><p class="lead">Echipa spune întâi „A” sau „F”, apoi atingeți cartonașul.</p><div class="grid g2" id="cards"></div>`;
+   const c=h.querySelector('#cards');Q.forEach(([t,a,w])=>{const b=$(`<button class="flip"><span>${t}</span><span class="ans"><span class="pill ${a?'ok':'no'}">${a?'Adevărat':'Fals'}</span> ${w}</span></button>`);b.onclick=()=>b.classList.toggle('open');c.appendChild(b)})}},
+ {id:"rec1", t:"Recapitulare M II", min:10, run:h=>{
+   h.innerHTML=`<p class="eyebrow">Evaluare formativă</p><h1>Recapitulare: echere și rigle</h1><div id="q"></div>`;
+   quiz(h.querySelector('#q'),[
+    {q:"Cu ce verificăm perpendicularitatea a două fețe?",opts:["Cu echerul de 90°","Cu șublerul","Cu rigla lată","Cu micrometrul"],a:0},
+    {q:"Ce arată dunga de lumină dintre riglă și piesă?",opts:["Că piesa e lucioasă","Că acolo suprafața nu e dreaptă","Că piesa e prea lungă","Că rigla e caldă"],a:1},
+    {q:"Cu ce măsurăm mărimea unei fante?",opts:["Cu lerele","Cu echerul de 45°","Cu punctatorul","Cu ciocanul"],a:0},
+    {q:"Toleranța este 0,05 mm, iar lera de 0,05 mm intră în fantă. Piesa este:",opts:["Conformă","Neconformă","Nu se poate spune","Conformă dacă e lustruită"],a:1,why:"Dacă lera de 0,05 mm intră, fanta depășește sau egalează 0,05 mm; în practică piesa se mai corectează."},
+    {q:"Ce echer folosim la o piuliță hexagonală?",opts:["Echerul de 120°","Echerul de 90°","Echerul de 45°","Niciunul"],a:0},
+    {q:"Rigla lată se folosește la metoda:",opts:["Petelor de vopsea","Fantei de lumină cu tăiș","Măsurării cu șublerul","Trasării"],a:0}])}},
+ {grp:"M IV · Ora 3", sub:"Pregătirea rosturilor. Îmbinări sudate · 13:00–13:50", id:"imb", t:"Tipuri de îmbinări sudate", min:12, run:h=>{
+   const F={
+    cap:`<svg viewBox="0 0 240 120"><rect x="20" y="50" width="96" height="22" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="124" y="50" width="96" height="22" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="114" y="46" width="12" height="30" fill="#e07a12"/></svg>`,
+    T:`<svg viewBox="0 0 240 120"><rect x="20" y="86" width="200" height="20" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="110" y="14" width="20" height="72" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><path d="M100 86 L110 76 L110 86Z M140 86 L130 76 L130 86Z" fill="#e07a12"/></svg>`,
+    colt:`<svg viewBox="0 0 240 120"><rect x="40" y="86" width="160" height="20" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="40" y="14" width="20" height="72" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><path d="M60 86 L74 86 L60 72Z" fill="#e07a12"/></svg>`,
+    supr:`<svg viewBox="0 0 240 120"><rect x="20" y="70" width="130" height="20" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="90" y="50" width="130" height="20" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><path d="M90 70 L90 52 L76 70Z" fill="#e07a12"/></svg>`,
+    muchie:`<svg viewBox="0 0 240 120"><rect x="40" y="40" width="160" height="18" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="40" y="58" width="160" height="18" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="196" y="38" width="10" height="40" fill="#e07a12"/></svg>`};
+   h.innerHTML=`<p class="eyebrow">M IV · Asamblări mecanice · S9</p><h1>Ce fel de îmbinare sudată este?</h1><p class="lead">Portocaliul arată cordonul de sudură.</p><div id="q"></div>`;
+   const o=["Cap la cap","În T","În colț","Prin suprapunere","Pe muchie (frontală)"];
+   quiz(h.querySelector('#q'),shuffle([{fig:F.cap,a:0},{fig:F.T,a:1},{fig:F.colt,a:2},{fig:F.supr,a:3},{fig:F.muchie,a:4}]).map(x=>({q:"Cum se numește îmbinarea?",fig:x.fig,opts:o,a:x.a})))}},
+ {id:"rost", t:"Rosturi: ce alegem după grosime", min:15, run:h=>{
+   h.innerHTML=`<p class="eyebrow">Explorare</p><h1>Ce rost pregătim?</h1>
+   <p class="lead">Mută cursorul la grosimea tablei. Desenul arată rostul potrivit pentru sudarea cap la cap. Valorile sunt orientative; le comparăm cu manualul (p. 32).</p>
+   <label for="th" class="note">Grosimea tablei s</label><input id="th" type="range" min="2" max="40" value="8">
+   <div class="grid g2" style="margin-top:8px"><div class="fig"><svg id="rs" viewBox="0 0 420 220"></svg></div><div class="card" id="rinfo"></div></div>
+   <div class="tbl" style="margin-top:14px"><table><thead><tr><th>Rost</th><th>Grosime orientativă</th><th>Cum se sudează</th></tr></thead><tbody>
+    <tr><td><b>I</b> (fără teșire)</td><td class="num">până la ~4 mm</td><td>marginile drepte, cu o mică distanță între ele</td></tr>
+    <tr><td><b>V</b></td><td class="num">~4–20 mm</td><td>teșire pe o parte, unghi ~60°, se sudează dintr-o parte</td></tr>
+    <tr><td><b>X</b> (dublu V)</td><td class="num">peste ~12 mm</td><td>teșire pe ambele părți, se sudează din ambele părți, consum mai mic de material de adaos</td></tr>
+    <tr><td><b>U</b></td><td class="num">peste ~20 mm</td><td>prelucrare mai grea, dar volum de sudură mai mic la table groase</td></tr></tbody></table></div>`;
+   const th=h.querySelector('#th'),rs=h.querySelector('#rs'),ri=h.querySelector('#rinfo');
+   function draw(){const s=+th.value,H=Math.min(140,30+s*3),y0=110-H/2,y1=110+H/2;let kind,shape,txt;
+     if(s<=4){kind="I";shape=`<rect x="40" y="${y0}" width="160" height="${H}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><rect x="220" y="${y0}" width="160" height="${H}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/>`;txt="Margini drepte, fără teșire. Distanța dintre table: aproximativ 1–2 mm."}
+     else if(s<=12){kind="V";const d=H*0.55;shape=`<polygon points="40,${y0} ${206-d},${y0} 206,${y1-6} 206,${y1} 40,${y1}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><polygon points="${214+d},${y0} 380,${y0} 380,${y1} 214,${y1} 214,${y1-6}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/>`;txt="Teșire în V pe o parte, unghi total ~60°. Lăsăm un umăr (talon) de 1–2 mm și o distanță de 1–3 mm la rădăcină."}
+     else if(s<=20){kind="V sau X";const d=H*0.28;shape=`<polygon points="40,${y0} ${206-d},${y0} 206,110 ${206-d},${y1} 40,${y1}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><polygon points="${214+d},${y0} 380,${y0} 380,${y1} ${214+d},${y1} 214,110" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/>`;txt="Zona de trecere: se poate V, dar dacă avem acces din ambele părți alegem X (dublu V): sudăm mai puțin material și piesa se deformează mai puțin."}
+     else{kind="X sau U";const d=H*0.28;shape=`<polygon points="40,${y0} ${200-d},${y0} 206,${110-8} 206,${110+8} ${200-d},${y1} 40,${y1}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/><polygon points="${220+d},${y0} 380,${y0} 380,${y1} ${220+d},${y1} 214,${110+8} 214,${110-8}" fill="#9fb4c4" stroke="#2b5f8a" stroke-width="2"/>`;txt="Table groase: rost X sau U. Rostul U cere prelucrare mecanică, dar umple mai puțin material de adaos."}
+     rs.innerHTML=`<rect width="420" height="220" fill="#f6f9fb"/>${shape}<text x="20" y="24" font-size="18" fill="#14212b">s = ${s} mm</text>`;
+     ri.innerHTML=`<p class="eyebrow">Rost recomandat</p><p class="big" style="margin:0">${kind}</p><p>${txt}</p>`}
+   th.oninput=draw;draw()}},
+ {id:"pasi", t:"Pregătirea rostului: ordinea pașilor", min:13, run:h=>{
+   const steps=["Trasăm linia de teșire pe epruvetă","Prindem epruveta în menghină","Teșim marginea cu pila (sau la polizor, cu ochelari)","Verificăm unghiul teșiturii cu șablonul sau raportorul","Curățăm marginile de rugină, ulei și bavuri","Așezăm tablele cu distanța la rădăcină și le prindem în puncte"];
+   h.innerHTML=`<p class="eyebrow">Joc pe echipe</p><h1>În ce ordine pregătim rostul?</h1><p class="lead">Atinge pașii în ordinea corectă. Echipa care reușește din prima primește 2 puncte.</p>
+   <div class="grid g2"><div><p class="note">Pașii, amestecați</p><div class="steps" id="pool"></div></div><div><p class="note">Ordinea echipei</p><div class="steps" id="ord"></div></div></div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="ck">Verifică ordinea</button><button class="btn alt" id="rs2">Reia</button></div><p class="fb" id="ofb"></p>`;
+   const pool=h.querySelector('#pool'),ord=h.querySelector('#ord');let chosen=[];
+   function build(){pool.innerHTML='';ord.innerHTML='';chosen=[];h.querySelector('#ofb').textContent='';shuffle(steps).forEach(s=>{const b=$(`<button class="step"><b>·</b><span>${s}</span></button>`);b.onclick=()=>{if(b.classList.contains('used'))return;b.classList.add('used');chosen.push(s);const r=$(`<div class="step"><b>${chosen.length}</b><span>${s}</span></div>`);ord.appendChild(r)};pool.appendChild(b)})}
+   h.querySelector('#ck').onclick=()=>{const f=h.querySelector('#ofb');if(chosen.length<steps.length){f.className='fb no';f.textContent='Alegeți toți cei 6 pași.';return}
+     const good=chosen.filter((s,i)=>s===steps[i]).length;f.className='fb '+(good===6?'ok':'no');f.textContent=good===6?'Ordinea este corectă.':`${good} din 6 pași sunt la locul lor. Ordinea corectă: `+steps.map((s,i)=>(i+1)+'. '+s).join(' · ')};
+   h.querySelector('#rs2').onclick=build;build()}},
+ {id:"rec2", t:"Recapitulare M IV", min:10, run:h=>{
+   h.innerHTML=`<p class="eyebrow">Evaluare formativă</p><h1>Recapitulare: îmbinări și rosturi</h1><div id="q"></div>`;
+   quiz(h.querySelector('#q'),[
+    {q:"Sudabilitatea este:",opts:["Proprietatea unui metal de a se îmbina prin sudare în condiții date, cu o îmbinare de calitate","Duritatea cordonului","Viteza de sudare","Grosimea tablei"],a:0},
+    {q:"Pentru o tablă de 3 mm, cap la cap, alegem de obicei rostul:",opts:["I","U","X","K"],a:0},
+    {q:"Pentru o tablă de 10 mm, sudată dintr-o singură parte, alegem:",opts:["Rost V","Rost I","Fără sudură","Rost U obligatoriu"],a:0},
+    {q:"De ce alegem rost X la table groase, când avem acces din ambele părți?",opts:["Consumăm mai puțin material de adaos și piesa se deformează mai puțin","Arată mai frumos","Nu mai trebuie curățat","E mai ușor de trasat"],a:0},
+    {q:"De ce curățăm marginile rostului înainte de sudare?",opts:["Rugina și uleiul produc pori și incluziuni în cordon","Ca să cântărească mai puțin","Ca să se vadă trasajul","Nu e necesar"],a:0},
+    {q:"Două table așezate una peste alta și sudate pe margine formează o îmbinare:",opts:["Prin suprapunere","Cap la cap","În T","Pe muchie"],a:0}])}},
+];
+
+/* ---------- navigare ---------- */
+const nav=document.getElementById('nav'),sheet=document.getElementById('sheet');let curId=null;
+ACT.forEach(a=>{if(a.grp)nav.appendChild($(`<h3>${a.grp}<small>${a.sub}</small></h3>`));const b=$(`<button><span>${a.t}</span><em>${a.min} min</em></button>`);b.dataset.id=a.id;b.onclick=()=>{location.hash=a.id};nav.appendChild(b)});
+function go(id){const a=ACT.find(x=>x.id===id)||ACT[0];curId=a.id;nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.id===a.id?'true':'false'));sheet.innerHTML='';a.run(sheet);setT(a.min*60);window.scrollTo(0,0)}
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
+go(location.hash.slice(1));
+</script>
+
+</body>
+</html>

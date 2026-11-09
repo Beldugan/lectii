@@ -23,6 +23,7 @@
     <button class="btn lock" id="test" hidden>🔒 Test + barem</button>
     <button class="btn" id="back" hidden>← Materialele orei</button>
     <button class="btn" id="fs">⛶ Ecran complet</button>
+    <a class="btn sim" id="app" hidden>🖥 Aplicație</a>
   </div>
 </div></div>
 
@@ -62,6 +63,7 @@ fetch("data/ore.json").then(r => r.json()).then(all => {
   if (k > 0) { $("#prev").href = "o.html?o=" + same[k-1].id; $("#prev").hidden = false; }
   if (k < same.length-1) { $("#next").href = "o.html?o=" + same[k+1].id; $("#next").hidden = false; }
   if (o.sim && !testMode) { $("#sim").href = `${o.sim}?o=${encodeURIComponent(o.id)}`; $("#sim").textContent = "📏 " + (o.simLabel || "Simulator"); $("#sim").hidden = false; }
+  if (o.app && !testMode) { $("#app").href = o.app; $("#app").textContent = "🖥 " + (o.appLabel || "Aplicație"); $("#app").hidden = false; }
   if (o.test && !testMode) { $("#test").hidden = false; $("#test").title = "Evaluare " + (o.evals||[]).join(", ") + " – PDF protejat cu parolă";
     $("#test").onclick = () => location.href = `o.html?o=${o.id}&test=1`; }
   if (testMode) { $("#back").hidden = false; $("#back").onclick = () => location.href = `o.html?o=${o.id}`; }

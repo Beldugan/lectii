@@ -370,6 +370,9 @@ def main():
 
     # simulatoare interactive legate de anumite ore (id oră → (pagina, eticheta butonului))
     SIMS = {"9e-2026-11-02-1000-m2-lt": ("sim/subler.html", "Simulator șubler – exerciții de citire")}
+    # aplicații pentru tabla SMART (id oră → (pagina, eticheta butonului)), afișate după „Ecran complet”
+    APPS = {"9e-2026-11-09-1100-m2-ip": ("sim/atelier-9e-s09.html#start", "Aplicație tabla SMART – Atelier virtual"),
+            "9e-2026-11-09-1300-m4-ip": ("sim/atelier-9e-s09.html#imb", "Aplicație tabla SMART – Atelier virtual")}
     evs = [x for x in (parse_event(ev) for ev in json.load(open(A.events))) if x]
     evs.sort(key=lambda e: (e["date"], e["time"]))
     warnings = []
@@ -385,6 +388,8 @@ def main():
             rec["parts"] = [lbl for lbl, *_ in pub]
             if e["id"] in SIMS:
                 rec["sim"], rec["simLabel"] = SIMS[e["id"]]
+            if e["id"] in APPS:
+                rec["app"], rec["appLabel"] = APPS[e["id"]]
             for kind, parts, locked in (("pdf", pub, False), ("test", lock, True)):
                 if not parts:
                     continue
