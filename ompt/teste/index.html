@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>OMPT-A · Teste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@500&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="config.js"></script>
+<script src="tests.enc.js"></script>
+<style>
+/* Aceeași foaie de caiet de matematică (pătrățele + linie roșie de margine) ca la testele Matura ale lui Patryk. */
+:root {
+  --desk: #e9e4d8; --paper: #fbf9f3; --grid: rgba(60, 100, 160, .12); --margin: rgba(200, 70, 60, .45);
+  --ink: #1d2433; --ink-2: #5d6371; --pen: #1f4e8c; --red: #b8392b; --ok: #2e7d4f; --field: #ffffff;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --hand: "Caveat", "Segoe Print", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --desk: #121418; --paper: #1d2128; --grid: rgba(150, 180, 225, .07); --margin: rgba(235, 120, 105, .35);
+  --ink: #e9e6de; --ink-2: #a8adb6; --pen: #91b7ea; --red: #ef8f7f; --ok: #7fcb9d; --field: #252a33; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --desk: #121418; --paper: #1d2128; --grid: rgba(150, 180, 225, .07); --margin: rgba(235, 120, 105, .35);
+  --ink: #e9e6de; --ink-2: #a8adb6; --pen: #91b7ea; --red: #ef8f7f; --ok: #7fcb9d; --field: #252a33; color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--serif); font-size: 17px; line-height: 1.6;
+  padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); padding-block: 20px 60px; }
+.sheet { max-width: 860px; margin: 0 auto; background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 8px 30px rgba(0,0,0,.08);
+  position: relative; padding: 28px 28px 48px 72px; min-height: 80vh; }
+.sheet::before { content: ""; position: absolute; top: 0; bottom: 0; left: 52px; width: 2px; background: var(--margin); }
+@media (max-width: 600px) { .sheet { padding: 20px 14px 40px 40px; } .sheet::before { left: 26px; } body { font-size: 16px; } }
+
+.top { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.who { font-family: var(--hand); font-size: 1.6rem; color: var(--pen); line-height: 1; }
+.toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--ink-2); border-radius: 6px; overflow: hidden; }
+.seg button { font: 600 .85rem var(--serif); padding: 5px 11px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+h1 { font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.3rem); line-height: 1.15; margin: 0 0 4px; text-wrap: balance; }
+h2.part { font-size: 1.15rem; margin: 34px 0 14px; padding-bottom: 4px; border-bottom: 1px solid var(--ink-2); }
+h2.part span { font-weight: 400; color: var(--ink-2); font-size: .9rem; }
+.sub { color: var(--ink-2); margin: 0 0 26px; max-width: 62ch; }
+
+.list { display: grid; gap: 0; border-top: 1px solid var(--ink-2); }
+.row { display: grid; grid-template-columns: 3.2rem minmax(0,1fr) auto; gap: 14px; align-items: center; padding: 12px 4px; border-bottom: 1px solid color-mix(in srgb, var(--ink-2) 35%, transparent); text-decoration: none; color: inherit; }
+a.row:hover { background: color-mix(in srgb, var(--pen) 7%, transparent); }
+.row .no { font-family: var(--mono); font-size: 1.05rem; color: var(--pen); }
+.row .tt { font-weight: 600; }
+.row .dd { font-size: .88rem; color: var(--ink-2); }
+.row.locked { color: var(--ink-2); } .row.locked .no { color: var(--ink-2); }
+.stamp { font-family: var(--hand); font-size: 1.25rem; line-height: 1; white-space: nowrap; }
+.stamp.open { color: var(--pen); } .stamp.sent { color: var(--ok); } .stamp.lock { color: var(--ink-2); font-family: var(--serif); font-size: .85rem; }
+
+.back { display: inline-block; margin-bottom: 14px; color: var(--pen); text-decoration: none; font-weight: 600; }
+.rules { border: 1px dashed var(--ink-2); padding: 10px 14px; margin: 0 0 18px; font-size: .93rem; color: var(--ink-2); }
+.rules ul { margin: 4px 0 0; padding-left: 20px; }
+.q { margin: 0 0 28px; }
+.qh { display: flex; gap: 10px; align-items: baseline; }
+.qn { font-family: var(--mono); color: var(--pen); min-width: 2.2rem; }
+.pts { margin-left: auto; font-size: .8rem; color: var(--ink-2); white-space: nowrap; }
+.qt { flex: 1; min-width: 0; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 18px; margin: 10px 0 0 2.2rem; }
+@media (max-width: 600px) { .opts { grid-template-columns: 1fr; margin-left: 0; } }
+.opt { display: flex; gap: 8px; align-items: center; padding: 6px 10px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; min-width: 0; overflow-x: auto; }
+.opt:hover { border-color: color-mix(in srgb, var(--ink-2) 50%, transparent); }
+.opt input { accent-color: var(--pen); width: 18px; height: 18px; flex: none; }
+.opt b { font-family: var(--mono); font-weight: 500; }
+.opt.sel { border-color: var(--pen); background: color-mix(in srgb, var(--pen) 8%, transparent); }
+.open { margin: 10px 0 0 2.2rem; display: grid; gap: 8px; }
+@media (max-width: 600px) { .open { margin-left: 0; } }
+.open label { font-size: .85rem; color: var(--ink-2); }
+.open input { font: 1rem var(--mono); color: var(--ink); background: var(--field); border: 1px solid var(--ink-2); border-radius: 4px; padding: 7px 10px; width: 100%; max-width: 280px; user-select: text; -webkit-user-select: text; }
+.hintline { font-size: .82rem; color: var(--ink-2); }
+.need { color: var(--red); font-size: .82rem; }
+.upl { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn.sm { font-size: .88rem; padding: 6px 12px; border-width: 1.5px; }
+.photos { display: flex; gap: 10px; flex-wrap: wrap; }
+.photos:empty { display: none; }
+.ph { position: relative; }
+.ph img { display: block; height: 96px; max-width: 100%; border: 1px solid var(--ink-2); border-radius: 4px; }
+.rm { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ink-2); background: var(--paper); color: var(--red); font: 700 .9rem var(--serif); cursor: pointer; line-height: 1; }
+
+.submit { margin-top: 30px; border-top: 2px solid var(--ink); padding-top: 18px; display: grid; gap: 12px; }
+.btn { font: 700 1rem var(--serif); padding: 10px 18px; border-radius: 6px; border: 2px solid var(--pen); background: var(--pen); color: var(--paper); cursor: pointer; justify-self: start; }
+.btn.ghost { background: transparent; color: var(--pen); }
+.btn:disabled { opacity: .5; cursor: default; }
+.note { color: var(--ink-2); font-size: .92rem; }
+.status { font-family: var(--hand); font-size: 1.6rem; color: var(--ok); }
+.err { color: var(--red); }
+.done-q { opacity: .85; }
+.progress { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--ink-2); margin: 0 -28px 18px -72px; padding: 6px 28px 6px 72px; font-size: .88rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 10px; }
+@media (max-width: 600px) { .progress { margin: 0 -14px 14px -40px; padding: 6px 14px 6px 40px; } }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+.katex { font-size: 1.05em; }
+.katex-display { margin: .4em 0; overflow-x: auto; overflow-y: hidden; }
+
+/* ---- Protecție împotriva capturilor (descurajare, nu blocare totală) ---- */
+body.protect .sheet { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+body.protect img { -webkit-user-drag: none; pointer-events: auto; }
+.wm { position: fixed; inset: 0; pointer-events: none; z-index: 20; display: none;
+  background-repeat: repeat; background-size: 360px 220px; opacity: .55; }
+body.protect .wm { display: block; }
+.shield { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; text-align: center;
+  background: var(--desk); color: var(--ink); padding: 24px; font-size: 1.05rem; }
+.shield b { display: block; font-family: var(--hand); font-size: 2rem; color: var(--red); margin-bottom: 6px; }
+body.protect.away .shield { display: flex; }
+body.protect.away .sheet { filter: blur(18px); }
+@media print { body * { display: none !important; } body::after { content: "Printarea testului nu este permisă."; display: block; padding: 40px; font: 20px serif; } }
+</style>
+</head>
+<body>
+<div class="wm" id="wm" aria-hidden="true"></div>
+<div class="shield" id="shield" role="alert"><div><b id="shieldT"></b><span id="shieldM"></span></div></div>
+<main class="sheet" id="sheet"></main>
+
+<script>
+const I18N = {
+  ro: {
+    who: "OMPT-A · Stefan L.", title: "Teste după fiecare lecție", sub: "După fiecare lecție se deschide un test de 40 de exerciții din materia lecției. Rezolvă-l dintr-o singură ședință și apasă „Trimite”. Discutăm rezultatele la lecția următoare.",
+    test: "Testul", lesson: "Lecția", opens: "se deschide", openNow: "deschis", sent: "trimis", until: "până la", closed: "închis",
+    daysLeft: d => d === 1 ? "peste o zi" : `peste ${d} zile`, todayAt: "astăzi",
+    back: "← Toate testele",
+    rules: (calc) => `<b>Reguli.</b><ul><li>Testul se poate trimite <b>o singură dată</b>. Durata recomandată: 90 de minute.</li><li>${calc ? "Ai voie cu calculator științific." : "Fără calculator."} Lucrează pe o foaie de hârtie.</li><li><b>Partea I · grilă</b> (1 p): alege un singur răspuns. <b>Partea a II-a · completează</b> (1 p): scrie doar rezultatul. <b>Partea a III-a · rezolvare</b> (2 p): rezolvi pe hârtie, scrii rezultatul final și încarci poza cu rezolvarea.</li><li>Capturile de ecran și printarea nu sunt permise. Dacă ieși din pagină, testul se ascunde, iar ieșirile se înregistrează.</li></ul>`,
+    p1: "Partea I · Grilă", p2: "Partea a II-a · Completează răspunsul", p3: "Partea a III-a · Rezolvare pe hârtie + poză",
+    p1s: "un singur răspuns corect", p2s: "scrie doar rezultatul", p3s: "rezultatul final + poza rezolvării",
+    answer: "Răspunsul tău", final: "Rezultatul final", hint: "Un număr sau o expresie, de ex. 12, -3/4, 2√3, 5·10^8",
+    pt: n => n === 1 ? "1 p" : `${n} p`,
+    upload: "Încarcă poza", camera: "Fă o poză", photoHint: "Fotografiază rezolvarea scrisă pe hârtie (maximum 3 poze la exercițiu).", photoNeed: "Lipsește poza cu rezolvarea.",
+    removePhoto: "Șterge poza", photoFail: "Poza nu a putut fi citită. Încearcă altă poză.",
+    submit: "Trimite testul", confirm: "Trimiți acum? După trimitere nu mai poți modifica nimic.", yes: "Da, trimite", no: "Încă nu",
+    unanswered: n => `Exerciții fără răspuns: ${n}.`, noPhotos: n => `Exerciții din Partea a III-a fără poză: ${n}.`,
+    sending: "Se trimite… (cu poze poate dura un minut)", sentOk: "Trimis ✓", sentAt: "Trimis la", once: "Fiecare test se poate trimite o singură dată.",
+    closedMsg: "Termenul pentru acest test a trecut:", lockedMsg: "Testul nu este deschis încă.", loading: "Se încarcă…",
+    sendFail: "Trimiterea nu a reușit. Răspunsurile sunt salvate pe acest dispozitiv: verifică internetul și apasă din nou „Trimite”.",
+    needCode: "Deschide pagina cu linkul primit de la profesor pe Preply.", badCode: "Linkul nu este valid. Folosește linkul primit pe Preply.",
+    net: "Serverul nu răspunde. Verifică internetul și reîncarcă pagina.",
+    progress: (a, n) => `Rezolvate: ${a} / ${n}`, time: "Timp", saved: "salvat automat",
+    awayT: "Testul este ascuns", awayM: "Ai ieșit din pagina testului. Revino în fereastră ca să continui. Ieșirea a fost înregistrată.",
+    shotT: "Captura nu este permisă", shotM: "Încercarea a fost înregistrată și apare la profesor.",
+    printNo: "Printarea testului nu este permisă."
+  },
+  en: {
+    who: "OMPT-A · Stefan L.", title: "Tests after each lesson", sub: "After every lesson a 40-question test on that lesson opens. Do it in one sitting and press “Submit”. We go through the results in the next lesson.",
+    test: "Test", lesson: "Lesson", opens: "opens", openNow: "open", sent: "submitted", until: "until", closed: "closed",
+    daysLeft: d => d === 1 ? "in 1 day" : `in ${d} days`, todayAt: "today",
+    back: "← All tests",
+    rules: (calc) => `<b>Rules.</b><ul><li>You can submit the test <b>only once</b>. Suggested time: 90 minutes.</li><li>${calc ? "A scientific calculator is allowed." : "No calculator."} Work on a sheet of paper.</li><li><b>Part I · multiple choice</b> (1 pt): choose one answer. <b>Part II · fill in</b> (1 pt): write only the result. <b>Part III · written solution</b> (2 pts): solve on paper, type the final answer and upload a photo of your working.</li><li>Screenshots and printing are not allowed. If you leave the page the test is hidden and every exit is recorded.</li></ul>`,
+    p1: "Part I · Multiple choice", p2: "Part II · Fill in the answer", p3: "Part III · Written solution + photo",
+    p1s: "one correct answer", p2s: "write only the result", p3s: "final answer + photo of your working",
+    answer: "Your answer", final: "Final answer", hint: "A number or expression, e.g. 12, -3/4, 2√3, 5·10^8",
+    pt: n => n === 1 ? "1 pt" : `${n} pts`,
+    upload: "Upload photo", camera: "Take photo", photoHint: "Photograph your written solution on paper (up to 3 photos per task).", photoNeed: "The photo of your working is missing.",
+    removePhoto: "Remove photo", photoFail: "This image could not be read. Try another photo.",
+    submit: "Submit test", confirm: "Submit now? You cannot change anything afterwards.", yes: "Yes, submit", no: "Not yet",
+    unanswered: n => `Questions without an answer: ${n}.`, noPhotos: n => `Part III tasks without a photo: ${n}.`,
+    sending: "Sending… (with photos this can take a minute)", sentOk: "Submitted ✓", sentAt: "Submitted at", once: "Each test can be submitted only once.",
+    closedMsg: "The deadline for this test has passed:", lockedMsg: "This test is not open yet.", loading: "Loading…",
+    sendFail: "Sending failed. Your answers are saved on this device: check your connection and press “Submit” again.",
+    needCode: "Open this page with the link your teacher sent you on Preply.", badCode: "This link is not valid. Use the link from Preply.",
+    net: "Cannot reach the server. Check your connection and reload the page.",
+    progress: (a, n) => `Answered: ${a} / ${n}`, time: "Time", saved: "saved automatically",
+    awayT: "The test is hidden", awayM: "You left the test page. Come back to this window to continue. The exit has been recorded.",
+    shotT: "Screenshots are not allowed", shotM: "The attempt has been recorded and your teacher will see it.",
+    printNo: "Printing the test is not allowed."
+  }
+};
+const LETTERS = ["A", "B", "C", "D"];
+const MAX_PHOTOS = 3;
+const TZ = "Europe/Bucharest";
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+/* Pozele stau în IndexedDB (localStorage are doar ~5 MB). */
+const idb = {
+  db: null,
+  open() { return this.db ? Promise.resolve(this.db) : new Promise((res, rej) => { const r = indexedDB.open("ompt-teste", 1); r.onupgradeneeded = () => r.result.createObjectStore("img"); r.onsuccess = () => { this.db = r.result; res(this.db); }; r.onerror = () => rej(r.error); }); },
+  async get(k) { const db = await this.open(); return new Promise(res => { const q = db.transaction("img").objectStore("img").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); },
+  async set(k, v) { const db = await this.open(); return new Promise(res => { const tx = db.transaction("img", "readwrite"); tx.objectStore("img").put(v, k); tx.oncomplete = () => res(); tx.onerror = () => res(); }); }
+};
+
+let lang = store.get("lang", "ro");
+let theme = store.get("theme", "system");
+const qs0 = new URLSearchParams(location.search);
+if (qs0.get("k")) { store.set("code", qs0.get("k")); history.replaceState(null, "", location.pathname + location.hash); }
+const CODE = store.get("code", "");
+let META = null, META_ERR = null;
+const ITEMS = {}, PHOTOS = {};
+let CURRENT = null, timerId = null;
+
+async function loadMeta() {
+  if (!CODE) { META_ERR = "nocode"; return; }
+  try { const r = await fetch(window.SHEET_URL + "?a=meta&k=" + encodeURIComponent(CODE)); const j = await r.json(); if (j.error) META_ERR = j.error; else META = j; }
+  catch (e) { META_ERR = "net"; }
+}
+function mt(t) { return META ? META.tests.find(x => x.n === t.n) : null; }
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function getItems(t) {
+  const r = await fetch(window.SHEET_URL + "?a=key&n=" + t.n + "&k=" + encodeURIComponent(CODE));
+  const j = await r.json();
+  if (!j.key) throw new Error(j.error || "locked");
+  const key = await crypto.subtle.importKey("raw", b64(j.key), "AES-GCM", false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(t.iv) }, key, b64(t.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+function applyTheme() { if (theme === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", theme); }
+applyTheme();
+const T = () => I18N[lang];
+const L = o => (Array.isArray(o) ? (lang === "en" ? o[1] : o[0]) : o);
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function todayRO() { return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+function isOpen(t) { const x = mt(t); return !!(x && x.open); }
+function deadline(t) { const x = mt(t); return x && x.deadline ? new Date(x.deadline) : null; }
+function isClosed(t) { const d = deadline(t); return !!d && META.role !== "admin" && Date.now() > d.getTime(); }
+function loc() { return lang === "en" ? "en-GB" : "ro-RO"; }
+function fmtDT(d) { return d.toLocaleString(loc(), { timeZone: TZ, weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+function fmtDate(d) { return new Date(d + "T12:00:00Z").toLocaleDateString(loc(), { weekday: "short", day: "numeric", month: "short" }); }
+function daysTo(d) { return Math.round((Date.parse(d + "T00:00:00Z") - Date.parse(todayRO() + "T00:00:00Z")) / 864e5); }
+
+function header() {
+  return `<div class="top">
+    <div class="who">${T().who}</div>
+    <div class="toggles">
+      <div class="seg" role="group" aria-label="Limba / Language">
+        <button id="lang-ro" aria-pressed="${lang === "ro"}">RO</button><button id="lang-en" aria-pressed="${lang === "en"}">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Temă / Theme">
+        <button id="th-light" aria-pressed="${theme === "light"}">${lang === "en" ? "Light" : "Luminos"}</button><button id="th-dark" aria-pressed="${theme === "dark"}">${lang === "en" ? "Dark" : "Întunecat"}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function wireHeader() {
+  document.getElementById("lang-ro").onclick = () => { lang = "ro"; store.set("lang", lang); document.documentElement.lang = "ro"; route(true); };
+  document.getElementById("lang-en").onclick = () => { lang = "en"; store.set("lang", lang); document.documentElement.lang = "en"; route(true); };
+  document.getElementById("th-light").onclick = () => { theme = theme === "light" ? "system" : "light"; store.set("theme", theme); applyTheme(); route(true); };
+  document.getElementById("th-dark").onclick = () => { theme = theme === "dark" ? "system" : "dark"; store.set("theme", theme); applyTheme(); route(true); };
+}
+
+function renderList() {
+  setProtect(false); CURRENT = null; clearInterval(timerId);
+  const rows = TESTS.map(t => {
+    const sent = store.get("sent-" + t.n, null) || (mt(t) && mt(t).done);
+    const open = isOpen(t);
+    let stamp;
+    if (sent) stamp = `<span class="stamp sent">${T().sent} ✓</span>`;
+    else if (open && isClosed(t)) stamp = `<span class="stamp lock">${T().closed}</span>`;
+    else if (open) stamp = `<span class="stamp open">${T().openNow} →</span>`;
+    else stamp = `<span class="stamp lock">${daysTo(t.d) <= 0 ? T().todayAt : T().daysLeft(daysTo(t.d))}</span>`;
+    const inner = `<span class="no">${String(t.n).padStart(2, "0")}</span>
+      <span><span class="tt">${esc(L([t.ro, t.en]))}</span><br><span class="dd">${T().lesson} ${t.n} · ${T().opens}: ${fmtDate(t.d)}${deadline(t) ? ` · ${T().until}: ${fmtDT(deadline(t))}` : ""}</span></span>${stamp}`;
+    return open && !META_ERR ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
+  }).join("");
+  const warn = META_ERR ? `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>` : "";
+  document.getElementById("sheet").innerHTML = header() + `<h1>${T().title}</h1><p class="sub">${T().sub}</p>${warn}<div class="list">${rows}</div>`;
+  wireHeader();
+}
+
+function shell(n, body) { document.getElementById("sheet").innerHTML = header() + `<a class="back" href="#">${T().back}</a>` + body; wireHeader(); }
+
+async function renderTest(n) {
+  const t = TESTS.find(x => x.n === n);
+  if (!t) return renderList();
+  if (!isOpen(t)) { setProtect(false); shell(n, `<p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}.</p>`); return; }
+  if (!ITEMS[n]) {
+    shell(n, `<p class="note">${T().loading}</p>`);
+    try { ITEMS[n] = await getItems(t); PHOTOS[n] = (await idb.get("p-" + n)) || {}; }
+    catch (e) { shell(n, `<p class="note err">${T().net}</p>`); return; }
+    if (location.hash !== "#t" + n) return;
+  }
+  CURRENT = n;
+  const items = ITEMS[n];
+  const draft = store.get("draft-" + n, { a: {} });
+  const ph = PHOTOS[n];
+  const sent = store.get("sent-" + n, null) || (mt(t) && mt(t).done ? { at: null } : null);
+  const closed = !sent && isClosed(t);
+  const ro = (sent || closed) ? "disabled" : "";
+  setProtect(!sent && !closed, t);
+  if (!sent && !closed && !store.get("start-" + n, null)) store.set("start-" + n, Date.now());
+
+  let html = "", part = "";
+  items.forEach((it, i) => {
+    const num = i + 1;
+    if (it.t !== part) {
+      part = it.t;
+      const k = { c: 1, f: 2, p: 3 }[part];
+      html += `<h2 class="part">${T()["p" + k]} <span>· ${T()["p" + k + "s"]}</span></h2>`;
+    }
+    const q = L([it.ro, it.en]);
+    const v = draft.a[num] || "";
+    if (it.t === "c") {
+      const opts = it.o.map((o, k) => {
+        const sel = v === LETTERS[k];
+        return `<label class="opt ${sel ? "sel" : ""}"><input type="radio" name="q${num}" value="${LETTERS[k]}" ${sel ? "checked" : ""} ${ro}><b>${LETTERS[k]}.</b><span>${L(o)}</span></label>`;
+      }).join("");
+      html += `<section class="q ${sent ? "done-q" : ""}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(1)}</span></div><div class="opts">${opts}</div></section>`;
+    } else if (it.t === "f") {
+      html += `<section class="q ${sent ? "done-q" : ""}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(1)}</span></div>
+        <div class="open"><label for="f${num}">${T().answer}</label><input id="f${num}" class="ans" data-n="${num}" value="${esc(v)}" placeholder="${T().hint}" ${ro} autocomplete="off" inputmode="text"></div></section>`;
+    } else {
+      const imgs = ph[num] || [];
+      html += `<section class="q ${sent ? "done-q" : ""}" id="sec${num}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(2)}</span></div>
+        <div class="open"><label for="f${num}">${T().final}</label><input id="f${num}" class="ans" data-n="${num}" value="${esc(v)}" placeholder="${T().hint}" ${ro} autocomplete="off">
+        <div class="photos">${imgs.map((u, k) => `<span class="ph"><img src="${u}" alt="${T().final} ${k + 1}">${ro ? "" : `<button type="button" class="rm" data-n="${num}" data-i="${k}" aria-label="${T().removePhoto}">×</button>`}</span>`).join("")}</div>
+        ${ro || imgs.length >= MAX_PHOTOS ? "" : `<div class="upl"><label class="btn ghost sm" for="up${num}">${T().upload}</label><input type="file" id="up${num}" class="pick" data-n="${num}" accept="image/*" multiple hidden><label class="btn ghost sm" for="cam${num}">${T().camera}</label><input type="file" id="cam${num}" class="pick" data-n="${num}" accept="image/*" capture="environment" hidden></div><div class="hintline">${T().photoHint}</div>`}
+        ${!ro && !imgs.length ? `<div class="need">${T().photoNeed}</div>` : ""}</div></section>`;
+    }
+  });
+
+  const sentBlock = sent ? `<div class="status">${T().sentOk}</div>${sent.at ? `<div class="note">${T().sentAt}: ${new Date(sent.at).toLocaleString(loc())}</div>` : ""}<div class="note">${T().once}</div>`
+    : closed ? `<p class="note err">${T().closedMsg} ${fmtDT(deadline(t))}.</p>`
+    : `${deadline(t) ? `<p class="note">${T().until}: <b>${fmtDT(deadline(t))}</b></p>` : ""}<button class="btn" id="submit">${T().submit}</button><div id="confirm"></div>`;
+  const bar = (sent || closed) ? "" : `<div class="progress"><span id="prog"></span><span><span id="clock"></span> · ${T().saved}</span></div>`;
+  shell(n, `${bar}<h1>${T().test} ${t.n}: ${esc(L([t.ro, t.en]))}</h1><div class="rules">${T().rules(t.calc)}</div>${html}<div class="submit">${sentBlock}</div>`);
+  renderMath();
+  if (sent || closed) return;
+
+  const answered = () => items.filter((it, i) => (draft.a[i + 1] || "").trim()).length;
+  const upd = () => { const p = document.getElementById("prog"); if (p) p.textContent = T().progress(answered(), items.length); };
+  const tick = () => { const c = document.getElementById("clock"); if (!c) return; const s = Math.floor((Date.now() - store.get("start-" + n, Date.now())) / 1000); c.textContent = `${T().time} ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+  upd(); tick(); clearInterval(timerId); timerId = setInterval(tick, 1000);
+
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", () => {
+    const num = +r.name.slice(1); draft.a[num] = r.value; store.set("draft-" + n, draft); upd();
+    document.querySelectorAll(`input[name="q${num}"]`).forEach(x => x.closest(".opt").classList.toggle("sel", x.checked));
+  }));
+  document.querySelectorAll("input.ans").forEach(el => el.addEventListener("input", () => { draft.a[+el.dataset.n] = el.value; store.set("draft-" + n, draft); upd(); }));
+  document.querySelectorAll("label[for^='up'], label[for^='cam']").forEach(l => l.addEventListener("click", () => { GUARD.picking = Date.now(); }));
+  document.querySelectorAll("input.pick").forEach(el => el.addEventListener("change", async () => {
+    GUARD.picking = Date.now();
+    const num = +el.dataset.n; const list = ph[num] = ph[num] || [];
+    for (const f of [...el.files]) { if (list.length >= MAX_PHOTOS) break; try { list.push(await shrink(f)); } catch (e) { alertNote(T().photoFail); } }
+    await idb.set("p-" + n, ph); keepScroll(() => renderTest(n), num);
+  }));
+  document.querySelectorAll("button.rm").forEach(b => b.onclick = async () => {
+    const num = +b.dataset.n; ph[num].splice(+b.dataset.i, 1); await idb.set("p-" + n, ph); keepScroll(() => renderTest(n), num);
+  });
+  document.getElementById("submit").onclick = () => {
+    const empty = items.length - answered();
+    const noPh = items.filter((it, i) => it.t === "p" && !(ph[i + 1] || []).length).length;
+    document.getElementById("confirm").innerHTML = `<p class="note">${empty ? `<span class="err">${T().unanswered(empty)}</span> ` : ""}${noPh ? `<span class="err">${T().noPhotos(noPh)}</span> ` : ""}${T().confirm}</p>
+      <div class="toggles"><button class="btn" id="yes">${T().yes}</button><button class="btn ghost" id="no">${T().no}</button></div>`;
+    document.getElementById("no").onclick = () => { document.getElementById("confirm").innerHTML = ""; };
+    document.getElementById("yes").onclick = () => send(t, draft, ph);
+  };
+}
+function keepScroll(fn, num) { fn(); const s = document.getElementById("sec" + num); if (s) s.scrollIntoView({ block: "center" }); }
+
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1500 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg", 0.72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("img")); };
+    img.src = url;
+  });
+}
+function alertNote(msg) { const c = document.getElementById("confirm"); if (c) c.innerHTML = `<p class="note err">${msg}</p>`; }
+
+async function send(t, draft, ph) {
+  document.getElementById("confirm").innerHTML = `<p class="note">${T().sending}</p>`;
+  const start = store.get("start-" + t.n, null);
+  const g = GUARD.log(t.n);
+  const payload = { test: t.n, k: CODE, lang, startedAt: start ? new Date(start).toISOString() : "", submittedAt: new Date().toISOString(),
+    minutes: start ? Math.round((Date.now() - start) / 60000) : "", answers: draft.a, photos: ph,
+    integrity: { exits: g.exits, awaySec: Math.round(g.awayMs / 1000), shots: g.shots, copy: g.copy, print: g.print } };
+  let ok = false, reason = "fail";
+  try {
+    const r = await fetch(window.SHEET_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    const j = await r.json(); ok = !!j.ok; reason = j.reason || (ok ? "" : "fail");
+  } catch (e) { reason = "fail"; }
+  if (reason === "closed") { await loadMeta(); renderTest(t.n); return; }
+  if (reason === "done") ok = true;
+  if (!ok) { document.getElementById("confirm").innerHTML = `<p class="note err">${reason === "code" ? T().badCode : T().sendFail}</p>`; return; }
+  store.set("sent-" + t.n, { at: Date.now() });
+  renderTest(t.n);
+}
+
+/* ---------------- Protecție împotriva capturilor ----------------
+   Un browser nu poate bloca total capturile (de ex. o poză făcută cu telefonul).
+   Pagina le descurajează: ascunde testul când fereastra pierde focusul, golește
+   clipboardul la Print Screen, blochează copierea, meniul contextual și printarea,
+   pune un filigran cu numele și data și trimite profesorului un jurnal al încercărilor. */
+const GUARD = {
+  on: false, picking: 0, awayAt: 0, t: null,
+  log(n) { return store.get("guard-" + n, { exits: 0, awayMs: 0, shots: 0, copy: 0, print: 0 }); },
+  bump(field, ms) { if (!this.t) return; const g = this.log(this.t.n); g[field] = (g[field] || 0) + (ms || 1); store.set("guard-" + this.t.n, g); },
+  justPicked() { return Date.now() - this.picking < 60000; }
+};
+function setProtect(on, t) {
+  GUARD.on = on; GUARD.t = on ? t : null;
+  document.body.classList.toggle("protect", on);
+  document.body.classList.remove("away");
+  if (on) drawWatermark(t);
+}
+function drawWatermark(t) {
+  const c = document.createElement("canvas"); c.width = 360; c.height = 220;
+  const x = c.getContext("2d"); x.translate(180, 110); x.rotate(-0.42);
+  const dark = getComputedStyle(document.documentElement).getPropertyValue("--paper").trim().startsWith("#1");
+  x.fillStyle = dark ? "rgba(255,255,255,.07)" : "rgba(29,36,51,.075)"; x.textAlign = "center";
+  x.font = "600 17px Georgia, serif"; x.fillText("Stefan L. · OMPT-A · Test " + t.n, 0, -6);
+  x.font = "14px Georgia, serif"; x.fillText(new Date().toLocaleString("ro-RO", { timeZone: TZ }) + " · " + CODE.slice(0, 4), 0, 16);
+  document.getElementById("wm").style.backgroundImage = `url(${c.toDataURL()})`;
+}
+function shield(kind) {
+  document.getElementById("shieldT").textContent = kind === "shot" ? T().shotT : T().awayT;
+  document.getElementById("shieldM").textContent = kind === "shot" ? T().shotM : T().awayM;
+}
+function goAway(kind) {
+  if (!GUARD.on) return;
+  if (kind !== "shot" && GUARD.justPicked()) return;          // alegerea unei poze / camera nu se numără
+  if (!document.body.classList.contains("away")) { GUARD.awayAt = Date.now(); if (kind !== "shot") GUARD.bump("exits"); }
+  shield(kind); document.body.classList.add("away");
+}
+function comeBack() {
+  if (!document.body.classList.contains("away")) return;
+  if (GUARD.awayAt) GUARD.bump("awayMs", Date.now() - GUARD.awayAt);
+  GUARD.awayAt = 0; GUARD.picking = 0;
+  setTimeout(() => document.body.classList.remove("away"), 250);
+}
+window.addEventListener("blur", () => goAway("away"));
+window.addEventListener("focus", () => { GUARD.picking = 0; comeBack(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) goAway("away"); else if (document.hasFocus()) comeBack(); });
+document.addEventListener("mouseleave", () => { if (GUARD.on && !GUARD.justPicked()) { shield("away"); document.body.classList.add("away"); } });
+document.addEventListener("mouseenter", () => { if (document.hasFocus()) comeBack(); });
+let lastShot = 0;
+function onShot() {
+  if (!GUARD.on) return;
+  if (Date.now() - lastShot > 1500) GUARD.bump("shots");
+  lastShot = Date.now();
+  try { navigator.clipboard && navigator.clipboard.writeText(" "); } catch (e) {}
+  goAway("shot"); setTimeout(() => { if (document.hasFocus()) comeBack(); }, 2500);
+}
+document.addEventListener("keydown", e => {
+  if (!GUARD.on) return;
+  const k = (e.key || "").toLowerCase(), mod = e.ctrlKey || e.metaKey;
+  if (k === "printscreen" || (e.metaKey && e.shiftKey && ["3", "4", "5", "s"].includes(k)) || (e.shiftKey && mod && k === "s")) { e.preventDefault(); onShot(); return; }
+  if (mod && ["p", "s", "c", "x", "u", "a"].includes(k)) {
+    if (k === "a" && e.target.matches("input")) return;
+    if ((k === "c" || k === "x") && e.target.matches("input")) return;
+    e.preventDefault(); GUARD.bump(k === "p" ? "print" : "copy");
+  }
+  if (k === "f12" || (mod && e.shiftKey && ["i", "j", "c"].includes(k))) e.preventDefault();
+}, true);
+document.addEventListener("keyup", e => { if ((e.key || "").toLowerCase() === "printscreen") onShot(); }, true);
+document.addEventListener("contextmenu", e => { if (GUARD.on) e.preventDefault(); });
+["copy", "cut"].forEach(ev => document.addEventListener(ev, e => { if (GUARD.on && !e.target.matches("input")) { e.preventDefault(); GUARD.bump("copy"); } }));
+document.addEventListener("dragstart", e => { if (GUARD.on) e.preventDefault(); });
+window.addEventListener("beforeprint", () => { if (GUARD.on) GUARD.bump("print"); });
+
+function renderMath() {
+  if (window.renderMathInElement) renderMathInElement(document.getElementById("sheet"), { delimiters: [{ left: "$", right: "$", display: false }], throwOnError: false });
+}
+function route(keep) {
+  const m = location.hash.match(/^#t(\d+)$/);
+  if (m) renderTest(+m[1]); else { renderList(); renderMath(); }
+  if (!keep) window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", () => route());
+document.getElementById("sheet").innerHTML = `<p class="note">${T().loading}</p>`;
+loadMeta().then(() => route());
+</script>
+</body>
+</html>

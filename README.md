@@ -10,3 +10,5 @@ Site: https://beldugan.github.io/lectii/
 - `build/build.py` – scriptul care reface pachetele din folderul „Planificari si Manuale 2026 2027”.
 
 Dacă modifici un manual sau un proiect de lecție, pachetele se refac cu același script; adresele orelor rămân aceleași.
+
+- `ompt/teste/` – testele lui Stefan L. (OMPT-A) după fiecare lecție: criptate, se deschid cu linkul personal; răspunsurile ajung în Google Sheet (barem doar în Apps Script).
