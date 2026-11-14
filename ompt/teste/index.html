@@ -272,6 +272,7 @@ function shell(n, body) { document.getElementById("sheet").innerHTML = header() 
 async function renderTest(n) {
   const t = TESTS.find(x => x.n === n);
   if (!t) return renderList();
+  if (META_ERR) { setProtect(false); shell(n, `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>`); return; }
   if (!isOpen(t)) { setProtect(false); shell(n, `<p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}.</p>`); return; }
   if (!ITEMS[n]) {
     shell(n, `<p class="note">${T().loading}</p>`);
