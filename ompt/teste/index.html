@@ -126,11 +126,11 @@ body.protect.away .sheet { filter: blur(18px); }
 <script>
 const I18N = {
   ro: {
-    who: "OMPT-A · Stefan L.", title: "Teste după fiecare lecție", sub: "După fiecare lecție se deschide un test de 40 de exerciții din materia lecției. Rezolvă-l dintr-o singură ședință și apasă „Trimite”. Discutăm rezultatele la lecția următoare.",
+    who: "OMPT-A · Stefan L.", title: "Teste după fiecare lecție", sub: "După fiecare lecție se deschide un test de 40 de exerciții din materia lecției. Testele rămân deschise, fără termen; rezolvă fiecare test dintr-o singură ședință și apasă „Trimite”. Discutăm rezultatele la lecția următoare.",
     test: "Testul", lesson: "Lecția", opens: "se deschide", openNow: "deschis", sent: "trimis", until: "până la", closed: "închis",
     daysLeft: d => d === 1 ? "peste o zi" : `peste ${d} zile`, todayAt: "astăzi",
     back: "← Toate testele",
-    rules: (calc) => `<b>Reguli.</b><ul><li>Testul se poate trimite <b>o singură dată</b>. Durata recomandată: 90 de minute.</li><li>${calc ? "Ai voie cu calculator științific." : "Fără calculator."} Lucrează pe o foaie de hârtie.</li><li><b>Partea I · grilă</b> (1 p): alege un singur răspuns. <b>Partea a II-a · completează</b> (1 p): scrie doar rezultatul. <b>Partea a III-a · rezolvare</b> (2 p): rezolvi pe hârtie, scrii rezultatul final și încarci poza cu rezolvarea.</li><li>Capturile de ecran și printarea nu sunt permise. Dacă ieși din pagină, testul se ascunde, iar ieșirile se înregistrează.</li></ul>`,
+    rules: (calc) => `<b>Reguli.</b><ul><li>Testul se poate trimite <b>o singură dată</b>. Durata recomandată: 90 de minute.</li><li>${calc ? "Ai voie cu calculator științific." : "Fără calculator."} Lucrează pe o foaie de hârtie.</li><li><b>Partea I · grilă</b> (1 p): alege un singur răspuns. <b>Partea a II-a · completează</b> (1 p): scrie doar rezultatul. <b>Partea a III-a · rezolvare</b> (2 p): rezolvi pe hârtie, scrii rezultatul final și încarci poza cu rezolvarea.</li><li>Capturile de ecran și printarea nu sunt permise. Testele rămân deschise, fără termen. Dacă ieși din pagină, testul se ascunde, iar ieșirile se înregistrează.</li></ul>`,
     p1: "Partea I · Grilă", p2: "Partea a II-a · Completează răspunsul", p3: "Partea a III-a · Rezolvare pe hârtie + poză",
     p1s: "un singur răspuns corect", p2s: "scrie doar rezultatul", p3s: "rezultatul final + poza rezolvării",
     answer: "Răspunsul tău", final: "Rezultatul final", hint: "Un număr sau o expresie, de ex. 12, -3/4, 2√3, 5·10^8",
@@ -150,11 +150,11 @@ const I18N = {
     printNo: "Printarea testului nu este permisă."
   },
   en: {
-    who: "OMPT-A · Stefan L.", title: "Tests after each lesson", sub: "After every lesson a 40-question test on that lesson opens. Do it in one sitting and press “Submit”. We go through the results in the next lesson.",
+    who: "OMPT-A · Stefan L.", title: "Tests after each lesson", sub: "After every lesson a 40-question test on that lesson opens. Tests stay open with no deadline; do each one in one sitting and press “Submit”. We go through the results in the next lesson.",
     test: "Test", lesson: "Lesson", opens: "opens", openNow: "open", sent: "submitted", until: "until", closed: "closed",
     daysLeft: d => d === 1 ? "in 1 day" : `in ${d} days`, todayAt: "today",
     back: "← All tests",
-    rules: (calc) => `<b>Rules.</b><ul><li>You can submit the test <b>only once</b>. Suggested time: 90 minutes.</li><li>${calc ? "A scientific calculator is allowed." : "No calculator."} Work on a sheet of paper.</li><li><b>Part I · multiple choice</b> (1 pt): choose one answer. <b>Part II · fill in</b> (1 pt): write only the result. <b>Part III · written solution</b> (2 pts): solve on paper, type the final answer and upload a photo of your working.</li><li>Screenshots and printing are not allowed. If you leave the page the test is hidden and every exit is recorded.</li></ul>`,
+    rules: (calc) => `<b>Rules.</b><ul><li>You can submit the test <b>only once</b>. Suggested time: 90 minutes.</li><li>${calc ? "A scientific calculator is allowed." : "No calculator."} Work on a sheet of paper.</li><li><b>Part I · multiple choice</b> (1 pt): choose one answer. <b>Part II · fill in</b> (1 pt): write only the result. <b>Part III · written solution</b> (2 pts): solve on paper, type the final answer and upload a photo of your working.</li><li>Screenshots and printing are not allowed. Tests stay open with no deadline. If you leave the page the test is hidden and every exit is recorded.</li></ul>`,
     p1: "Part I · Multiple choice", p2: "Part II · Fill in the answer", p3: "Part III · Written solution + photo",
     p1s: "one correct answer", p2s: "write only the result", p3s: "final answer + photo of your working",
     answer: "Your answer", final: "Final answer", hint: "A number or expression, e.g. 12, -3/4, 2√3, 5·10^8",
@@ -259,7 +259,7 @@ function renderList() {
     else if (open) stamp = `<span class="stamp open">${T().openNow} →</span>`;
     else stamp = `<span class="stamp lock">${daysTo(t.d) <= 0 ? T().todayAt : T().daysLeft(daysTo(t.d))}</span>`;
     const inner = `<span class="no">${String(t.n).padStart(2, "0")}</span>
-      <span><span class="tt">${esc(L([t.ro, t.en]))}</span><br><span class="dd">${T().lesson} ${t.n} · ${T().opens}: ${fmtDate(t.d)}${deadline(t) ? ` · ${T().until}: ${fmtDT(deadline(t))}` : ""}</span></span>${stamp}`;
+      <span><span class="tt">${esc(L([t.ro, t.en]))}</span><br><span class="dd">${T().lesson} ${t.n} · 40 ${lang === "en" ? "questions" : "de exerciții"}</span></span>${stamp}`;
     return open && !META_ERR ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
   }).join("");
   const warn = META_ERR ? `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>` : "";
