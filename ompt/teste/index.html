@@ -178,8 +178,8 @@ const LETTERS = ["A", "B", "C", "D"];
 const MAX_PHOTOS = 3;
 const TZ = "Europe/Bucharest";
 const store = {
-  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  get(k, d) { try { const v = localStorage.getItem("ompt-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ompt-" + k, JSON.stringify(v)); } catch (e) {} }
 };
 /* Pozele stau în IndexedDB (localStorage are doar ~5 MB). */
 const idb = {
