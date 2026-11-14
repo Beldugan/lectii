@@ -126,7 +126,7 @@ body.protect.away .sheet { filter: blur(18px); }
 <script>
 const I18N = {
   ro: {
-    who: "OMPT-A · Stefan L.", title: "Teste după fiecare lecție", sub: "După fiecare lecție se deschide un test de 40 de exerciții din materia lecției. Testele rămân deschise, fără termen; rezolvă fiecare test dintr-o singură ședință și apasă „Trimite”. Discutăm rezultatele la lecția următoare.",
+    who: "OMPT-A · Stefan L.", title: "Teste după fiecare lecție", sub: "După fiecare lecție se deschide un test de 40 de exerciții din materia lecției. Testele deschise nu au termen; rezolvă fiecare test dintr-o singură ședință și apasă „Trimite”. Discutăm rezultatele la lecția următoare.",
     test: "Testul", lesson: "Lecția", opens: "se deschide", openNow: "deschis", sent: "trimis", until: "până la", closed: "închis",
     daysLeft: d => d === 1 ? "peste o zi" : `peste ${d} zile`, todayAt: "astăzi",
     back: "← Toate testele",
@@ -135,12 +135,12 @@ const I18N = {
     p1s: "un singur răspuns corect", p2s: "scrie doar rezultatul", p3s: "rezultatul final + poza rezolvării",
     answer: "Răspunsul tău", final: "Rezultatul final", hint: "Un număr sau o expresie, de ex. 12, -3/4, 2√3, 5·10^8",
     pt: n => n === 1 ? "1 p" : `${n} p`,
-    upload: "Încarcă poza", camera: "Fă o poză", photoHint: "Fotografiază rezolvarea scrisă pe hârtie (maximum 3 poze la exercițiu).", photoNeed: "Lipsește poza cu rezolvarea.",
+    upload: "Încarcă poza", camera: "Fă o poză", photoHint: "Fotografiază rezolvarea scrisă pe hârtie (maximum 3 poze la exercițiu).", photoNeed: "Lipsește poza cu rezolvarea.", workOpt: "Rezolvarea pe hârtie (opțional, dar recomandat): încarcă o poză sau fă una.", workLbl: "Rezolvarea ta",
     removePhoto: "Șterge poza", photoFail: "Poza nu a putut fi citită. Încearcă altă poză.",
     submit: "Trimite testul", confirm: "Trimiți acum? După trimitere nu mai poți modifica nimic.", yes: "Da, trimite", no: "Încă nu",
     unanswered: n => `Exerciții fără răspuns: ${n}.`, noPhotos: n => `Exerciții din Partea a III-a fără poză: ${n}.`,
     sending: "Se trimite… (cu poze poate dura un minut)", sentOk: "Trimis ✓", sentAt: "Trimis la", once: "Fiecare test se poate trimite o singură dată.",
-    closedMsg: "Termenul pentru acest test a trecut:", lockedMsg: "Testul nu este deschis încă.", loading: "Se încarcă…",
+    closedMsg: "Termenul pentru acest test a trecut:", lockedMsg: "Testul nu este deschis încă. Profesorul îl deschide după lecție.", soon: "în curând", loading: "Se încarcă…",
     sendFail: "Trimiterea nu a reușit. Răspunsurile sunt salvate pe acest dispozitiv: verifică internetul și apasă din nou „Trimite”.",
     needCode: "Deschide pagina cu linkul primit de la profesor pe Preply.", badCode: "Linkul nu este valid. Folosește linkul primit pe Preply.",
     net: "Serverul nu răspunde. Verifică internetul și reîncarcă pagina.",
@@ -150,7 +150,7 @@ const I18N = {
     printNo: "Printarea testului nu este permisă."
   },
   en: {
-    who: "OMPT-A · Stefan L.", title: "Tests after each lesson", sub: "After every lesson a 40-question test on that lesson opens. Tests stay open with no deadline; do each one in one sitting and press “Submit”. We go through the results in the next lesson.",
+    who: "OMPT-A · Stefan L.", title: "Tests after each lesson", sub: "After every lesson a 40-question test on that lesson opens. Open tests have no deadline; do each one in one sitting and press “Submit”. We go through the results in the next lesson.",
     test: "Test", lesson: "Lesson", opens: "opens", openNow: "open", sent: "submitted", until: "until", closed: "closed",
     daysLeft: d => d === 1 ? "in 1 day" : `in ${d} days`, todayAt: "today",
     back: "← All tests",
@@ -159,12 +159,12 @@ const I18N = {
     p1s: "one correct answer", p2s: "write only the result", p3s: "final answer + photo of your working",
     answer: "Your answer", final: "Final answer", hint: "A number or expression, e.g. 12, -3/4, 2√3, 5·10^8",
     pt: n => n === 1 ? "1 pt" : `${n} pts`,
-    upload: "Upload photo", camera: "Take photo", photoHint: "Photograph your written solution on paper (up to 3 photos per task).", photoNeed: "The photo of your working is missing.",
+    upload: "Upload photo", camera: "Take photo", photoHint: "Photograph your written solution on paper (up to 3 photos per task).", photoNeed: "The photo of your working is missing.", workOpt: "Your working on paper (optional but recommended): upload a photo or take one.", workLbl: "Your working",
     removePhoto: "Remove photo", photoFail: "This image could not be read. Try another photo.",
     submit: "Submit test", confirm: "Submit now? You cannot change anything afterwards.", yes: "Yes, submit", no: "Not yet",
     unanswered: n => `Questions without an answer: ${n}.`, noPhotos: n => `Part III tasks without a photo: ${n}.`,
     sending: "Sending… (with photos this can take a minute)", sentOk: "Submitted ✓", sentAt: "Submitted at", once: "Each test can be submitted only once.",
-    closedMsg: "The deadline for this test has passed:", lockedMsg: "This test is not open yet.", loading: "Loading…",
+    closedMsg: "The deadline for this test has passed:", lockedMsg: "This test is not open yet. Your teacher opens it after the lesson.", soon: "coming soon", loading: "Loading…",
     sendFail: "Sending failed. Your answers are saved on this device: check your connection and press “Submit” again.",
     needCode: "Open this page with the link your teacher sent you on Preply.", badCode: "This link is not valid. Use the link from Preply.",
     net: "Cannot reach the server. Check your connection and reload the page.",
@@ -177,9 +177,13 @@ const I18N = {
 const LETTERS = ["A", "B", "C", "D"];
 const MAX_PHOTOS = 3;
 const TZ = "Europe/Bucharest";
+/* Cheile pe dispozitiv: comune (limbă, temă, cod) și separate pe cod de acces (ciorne, „trimis”, poze),
+   ca proba profesorului să nu se amestece cu testul elevului pe același calculator. */
+const SHARED = { lang: 1, theme: 1, code: 1 };
+const kk = k => SHARED[k] ? "ompt-" + k : "ompt-" + (window.__CODE || "") + "-" + k;
 const store = {
-  get(k, d) { try { const v = localStorage.getItem("ompt-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("ompt-" + k, JSON.stringify(v)); } catch (e) {} }
+  get(k, d) { try { const v = localStorage.getItem(kk(k)); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(kk(k), JSON.stringify(v)); } catch (e) {} }
 };
 /* Pozele stau în IndexedDB (localStorage are doar ~5 MB). */
 const idb = {
@@ -194,6 +198,7 @@ let theme = store.get("theme", "system");
 const qs0 = new URLSearchParams(location.search);
 if (qs0.get("k")) { store.set("code", qs0.get("k")); history.replaceState(null, "", location.pathname + location.hash); }
 const CODE = store.get("code", "");
+window.__CODE = CODE;
 let META = null, META_ERR = null;
 const ITEMS = {}, PHOTOS = {};
 let CURRENT = null, timerId = null;
@@ -251,13 +256,13 @@ function wireHeader() {
 function renderList() {
   setProtect(false); CURRENT = null; clearInterval(timerId);
   const rows = TESTS.map(t => {
-    const sent = store.get("sent-" + t.n, null) || (mt(t) && mt(t).done);
+    const sent = mt(t) ? mt(t).done : store.get("sent-" + t.n, null);
     const open = isOpen(t);
     let stamp;
     if (sent) stamp = `<span class="stamp sent">${T().sent} ✓</span>`;
     else if (open && isClosed(t)) stamp = `<span class="stamp lock">${T().closed}</span>`;
     else if (open) stamp = `<span class="stamp open">${T().openNow} →</span>`;
-    else stamp = `<span class="stamp lock">${daysTo(t.d) <= 0 ? T().todayAt : T().daysLeft(daysTo(t.d))}</span>`;
+    else stamp = `<span class="stamp lock">${T().soon}</span>`;
     const inner = `<span class="no">${String(t.n).padStart(2, "0")}</span>
       <span><span class="tt">${esc(L([t.ro, t.en]))}</span><br><span class="dd">${T().lesson} ${t.n} · 40 ${lang === "en" ? "questions" : "de exerciții"}</span></span>${stamp}`;
     return open && !META_ERR ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
@@ -273,10 +278,10 @@ async function renderTest(n) {
   const t = TESTS.find(x => x.n === n);
   if (!t) return renderList();
   if (META_ERR) { setProtect(false); shell(n, `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>`); return; }
-  if (!isOpen(t)) { setProtect(false); shell(n, `<p>${T().lockedMsg} ${T().opens}: ${fmtDate(t.d)}.</p>`); return; }
+  if (!isOpen(t)) { setProtect(false); shell(n, `<p>${T().lockedMsg}</p>`); return; }
   if (!ITEMS[n]) {
     shell(n, `<p class="note">${T().loading}</p>`);
-    try { ITEMS[n] = await getItems(t); PHOTOS[n] = (await idb.get("p-" + n)) || {}; }
+    try { ITEMS[n] = await getItems(t); PHOTOS[n] = (await idb.get(CODE + "-p-" + n)) || {}; }
     catch (e) { shell(n, `<p class="note err">${T().net}</p>`); return; }
     if (location.hash !== "#t" + n) return;
   }
@@ -284,7 +289,7 @@ async function renderTest(n) {
   const items = ITEMS[n];
   const draft = store.get("draft-" + n, { a: {} });
   const ph = PHOTOS[n];
-  const sent = store.get("sent-" + n, null) || (mt(t) && mt(t).done ? { at: null } : null);
+  const sent = mt(t) ? (mt(t).done ? (store.get("sent-" + n, null) || { at: null }) : null) : store.get("sent-" + n, null);
   const closed = !sent && isClosed(t);
   const ro = (sent || closed) ? "disabled" : "";
   setProtect(!sent && !closed, t);
@@ -305,17 +310,16 @@ async function renderTest(n) {
         const sel = v === LETTERS[k];
         return `<label class="opt ${sel ? "sel" : ""}"><input type="radio" name="q${num}" value="${LETTERS[k]}" ${sel ? "checked" : ""} ${ro}><b>${LETTERS[k]}.</b><span>${L(o)}</span></label>`;
       }).join("");
-      html += `<section class="q ${sent ? "done-q" : ""}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(1)}</span></div><div class="opts">${opts}</div></section>`;
+      const work = it.w ? `<div class="open">${photoBlock(num, ph[num] || [], ro, false)}</div>` : "";
+      html += `<section class="q ${sent ? "done-q" : ""}" id="sec${num}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(1)}</span></div><div class="opts">${opts}</div>${work}</section>`;
     } else if (it.t === "f") {
-      html += `<section class="q ${sent ? "done-q" : ""}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(1)}</span></div>
-        <div class="open"><label for="f${num}">${T().answer}</label><input id="f${num}" class="ans" data-n="${num}" value="${esc(v)}" placeholder="${T().hint}" ${ro} autocomplete="off" inputmode="text"></div></section>`;
+      html += `<section class="q ${sent ? "done-q" : ""}" id="sec${num}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(1)}</span></div>
+        <div class="open"><label for="f${num}">${T().answer}</label><input id="f${num}" class="ans" data-n="${num}" value="${esc(v)}" placeholder="${T().hint}" ${ro} autocomplete="off" inputmode="text">${it.w ? photoBlock(num, ph[num] || [], ro, false) : ""}</div></section>`;
     } else {
       const imgs = ph[num] || [];
       html += `<section class="q ${sent ? "done-q" : ""}" id="sec${num}"><div class="qh"><span class="qn">${num}.</span><div class="qt">${q}</div><span class="pts">${T().pt(2)}</span></div>
         <div class="open"><label for="f${num}">${T().final}</label><input id="f${num}" class="ans" data-n="${num}" value="${esc(v)}" placeholder="${T().hint}" ${ro} autocomplete="off">
-        <div class="photos">${imgs.map((u, k) => `<span class="ph"><img src="${u}" alt="${T().final} ${k + 1}">${ro ? "" : `<button type="button" class="rm" data-n="${num}" data-i="${k}" aria-label="${T().removePhoto}">×</button>`}</span>`).join("")}</div>
-        ${ro || imgs.length >= MAX_PHOTOS ? "" : `<div class="upl"><label class="btn ghost sm" for="up${num}">${T().upload}</label><input type="file" id="up${num}" class="pick" data-n="${num}" accept="image/*" multiple hidden><label class="btn ghost sm" for="cam${num}">${T().camera}</label><input type="file" id="cam${num}" class="pick" data-n="${num}" accept="image/*" capture="environment" hidden></div><div class="hintline">${T().photoHint}</div>`}
-        ${!ro && !imgs.length ? `<div class="need">${T().photoNeed}</div>` : ""}</div></section>`;
+        ${photoBlock(num, imgs, ro, true)}</div></section>`;
     }
   });
 
@@ -342,10 +346,10 @@ async function renderTest(n) {
     GUARD.picking = Date.now();
     const num = +el.dataset.n; const list = ph[num] = ph[num] || [];
     for (const f of [...el.files]) { if (list.length >= MAX_PHOTOS) break; try { list.push(await shrink(f)); } catch (e) { alertNote(T().photoFail); } }
-    await idb.set("p-" + n, ph); keepScroll(() => renderTest(n), num);
+    await idb.set(CODE + "-p-" + n, ph); keepScroll(() => renderTest(n), num);
   }));
   document.querySelectorAll("button.rm").forEach(b => b.onclick = async () => {
-    const num = +b.dataset.n; ph[num].splice(+b.dataset.i, 1); await idb.set("p-" + n, ph); keepScroll(() => renderTest(n), num);
+    const num = +b.dataset.n; ph[num].splice(+b.dataset.i, 1); await idb.set(CODE + "-p-" + n, ph); keepScroll(() => renderTest(n), num);
   });
   document.getElementById("submit").onclick = () => {
     const empty = items.length - answered();
@@ -355,6 +359,12 @@ async function renderTest(n) {
     document.getElementById("no").onclick = () => { document.getElementById("confirm").innerHTML = ""; };
     document.getElementById("yes").onclick = () => send(t, draft, ph);
   };
+}
+function photoBlock(num, imgs, ro, required) {
+  const thumbs = `<div class="photos">${imgs.map((u, k) => `<span class="ph"><img src="${u}" alt="${T().workLbl} ${k + 1}">${ro ? "" : `<button type="button" class="rm" data-n="${num}" data-i="${k}" aria-label="${T().removePhoto}">×</button>`}</span>`).join("")}</div>`;
+  if (ro) return thumbs;
+  const btns = imgs.length >= MAX_PHOTOS ? "" : `<div class="upl"><label class="btn ghost sm" for="up${num}">${T().upload}</label><input type="file" id="up${num}" class="pick" data-n="${num}" accept="image/*" multiple hidden><label class="btn ghost sm" for="cam${num}">${T().camera}</label><input type="file" id="cam${num}" class="pick" data-n="${num}" accept="image/*" capture="environment" hidden></div>`;
+  return `${thumbs}${btns}<div class="hintline">${required ? T().photoHint : T().workOpt}</div>${required && !imgs.length ? `<div class="need">${T().photoNeed}</div>` : ""}`;
 }
 function keepScroll(fn, num) { fn(); const s = document.getElementById("sec" + num); if (s) s.scrollIntoView({ block: "center" }); }
 
@@ -389,6 +399,7 @@ async function send(t, draft, ph) {
   if (reason === "done") ok = true;
   if (!ok) { document.getElementById("confirm").innerHTML = `<p class="note err">${reason === "code" ? T().badCode : T().sendFail}</p>`; return; }
   store.set("sent-" + t.n, { at: Date.now() });
+  if (mt(t)) mt(t).done = true;
   renderTest(t.n);
 }
 
