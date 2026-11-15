@@ -140,7 +140,7 @@ const I18N = {
     submit: "Trimite testul", confirm: "Trimiți acum? După trimitere nu mai poți modifica nimic.", yes: "Da, trimite", no: "Încă nu",
     unanswered: n => `Exerciții fără răspuns: ${n}.`, noPhotos: n => `Exerciții din Partea a III-a fără poză: ${n}.`,
     sending: "Se trimite… (cu poze poate dura un minut)", sentOk: "Trimis ✓", sentAt: "Trimis la", once: "Fiecare test se poate trimite o singură dată.",
-    closedMsg: "Termenul pentru acest test a trecut:", lockedMsg: "Testul nu este deschis încă. Profesorul îl deschide după lecție.", soon: "în curând", loading: "Se încarcă…",
+    closedMsg: "Termenul pentru acest test a trecut:", lockedMsg: "Testul nu este deschis încă. Profesorul îl deschide după lecție.", soon: "în curând", closedForStudent: "închis pentru Stefan", adminNote: "<b>Mod profesor (probă).</b> Vezi toate testele ca să le verifici; trimiterile tale apar în Sheet ca PROBA. Ce vede Stefan: „deschis” = deschis și pentru el, „închis pentru Stefan” = el îl vede „în curând”. Deschiderea se face din foaia „Deschise” din Sheet.", loading: "Se încarcă…",
     sendFail: "Trimiterea nu a reușit. Răspunsurile sunt salvate pe acest dispozitiv: verifică internetul și apasă din nou „Trimite”.",
     needCode: "Deschide pagina cu linkul primit de la profesor pe Preply.", badCode: "Linkul nu este valid. Folosește linkul primit pe Preply.",
     net: "Serverul nu răspunde. Verifică internetul și reîncarcă pagina.",
@@ -164,7 +164,7 @@ const I18N = {
     submit: "Submit test", confirm: "Submit now? You cannot change anything afterwards.", yes: "Yes, submit", no: "Not yet",
     unanswered: n => `Questions without an answer: ${n}.`, noPhotos: n => `Part III tasks without a photo: ${n}.`,
     sending: "Sending… (with photos this can take a minute)", sentOk: "Submitted ✓", sentAt: "Submitted at", once: "Each test can be submitted only once.",
-    closedMsg: "The deadline for this test has passed:", lockedMsg: "This test is not open yet. Your teacher opens it after the lesson.", soon: "coming soon", loading: "Loading…",
+    closedMsg: "The deadline for this test has passed:", lockedMsg: "This test is not open yet. Your teacher opens it after the lesson.", soon: "coming soon", closedForStudent: "closed for Stefan", adminNote: "<b>Teacher mode (trial).</b> You see every test so you can check it; your submissions go to the Sheet as PROBA. What Stefan sees: “open” = open for him too, “closed for Stefan” = he sees “coming soon”. Tests are opened from the “Deschise” tab of the Sheet.", loading: "Loading…",
     sendFail: "Sending failed. Your answers are saved on this device: check your connection and press “Submit” again.",
     needCode: "Open this page with the link your teacher sent you on Preply.", badCode: "This link is not valid. Use the link from Preply.",
     net: "Cannot reach the server. Check your connection and reload the page.",
@@ -261,6 +261,7 @@ function renderList() {
     let stamp;
     if (sent) stamp = `<span class="stamp sent">${T().sent} ✓</span>`;
     else if (open && isClosed(t)) stamp = `<span class="stamp lock">${T().closed}</span>`;
+    else if (open && META && META.role === "admin" && mt(t) && !mt(t).student) stamp = `<span class="stamp lock">${T().closedForStudent}</span>`;
     else if (open) stamp = `<span class="stamp open">${T().openNow} →</span>`;
     else stamp = `<span class="stamp lock">${T().soon}</span>`;
     const inner = `<span class="no">${String(t.n).padStart(2, "0")}</span>
@@ -268,7 +269,8 @@ function renderList() {
     return open && !META_ERR ? `<a class="row" href="#t${t.n}">${inner}</a>` : `<div class="row locked">${inner}</div>`;
   }).join("");
   const warn = META_ERR ? `<p class="note err">${{ nocode: T().needCode, code: T().badCode }[META_ERR] || T().net}</p>` : "";
-  document.getElementById("sheet").innerHTML = header() + `<h1>${T().title}</h1><p class="sub">${T().sub}</p>${warn}<div class="list">${rows}</div>`;
+  const adm = META && META.role === "admin" ? `<p class="rules">${T().adminNote}</p>` : "";
+  document.getElementById("sheet").innerHTML = header() + `<h1>${T().title}</h1><p class="sub">${T().sub}</p>${warn}${adm}<div class="list">${rows}</div>`;
   wireHeader();
 }
 
